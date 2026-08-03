@@ -39,6 +39,39 @@ When you add a new component, append it here and in `src/components/index.ts`.
 
 ---
 
+## Two gotchas that fail silently
+
+Both of these produce a render that **succeeds and returns a wrong file**, which
+is why they cost an afternoon each to find. `video_compose` now bridges them
+automatically and reports what it did in `render_report`'s
+`data.remotion_adaptation` — but author cuts correctly and it won't have to.
+
+### 1. `in_seconds` / `out_seconds` mean different things per engine
+
+| Engine | Reads them as |
+|---|---|
+| Remotion (this composition) | **Timeline positions.** A cut is placed at `from = in_seconds * fps`, and `Root.tsx`'s `calculateMetadata` sets the whole composition length from `max(out_seconds)`. |
+| FFmpeg (`_render_via_ffmpeg`) | **Source trim points.** It seeks to `in_seconds` *inside the source file* and takes `out - in`. |
+
+Cuts authored the FFmpeg way — every `in_seconds` at 0, `out_seconds` holding a
+clip length — collapse a Remotion render to the length of its single longest
+scene. Declare which you mean with `edit_decisions.cut_timing`
+(`"timeline"` | `"source_trim"`); it is inferred when omitted.
+
+To trim *within* a video source on the Remotion path, use **`source_in_seconds`**
+(→ `OffthreadVideo`'s `startFrom`) and keep `in/out_seconds` for placement.
+
+### 2. Assets must physically live under `public/`
+
+The components resolve sources through `staticFile()`, so a source has to be a
+path **relative to `remotion-composer/public/`**. Absolute paths do not work:
+`resolveAsset()` converts them to `file://` URIs, and headless Chrome refuses
+them outright — `Not allowed to load local resource`, then
+`Error loading image with src: file:///…`. `video_compose` therefore copies each
+cut source into `public/om-assets/<hash-of-source-dir>/<name>` before rendering
+and rewrites the cut to that relative path. Anything it cannot resolve to a real
+file aborts the render rather than rendering a blank scene.
+
 ## Adding a new scene type
 
 1. Create the React component in `src/components/MyScene.tsx`. Use `interpolate(frame, [inFrame, outFrame], [from, to])` and `spring(...)` for motion. Read `useCurrentFrame()` and `useVideoConfig()`.

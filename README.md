@@ -278,7 +278,7 @@ You don't need paid API keys to make real videos. Out of the box, `make setup` g
 
 | Capability | Free Tool | What It Does |
 |-----------|-----------|-------------|
-| **Narration** | Piper TTS | Free offline text-to-speech — real human-sounding narration |
+| **Narration** | Kokoro-82M TTS | Free offline text-to-speech, no API key — real human-sounding narration |
 | **Open footage** | Archive.org + NASA + Wikimedia Commons | Free/open archival footage, educational media, and documentary texture |
 | **Extra stock** | Pexels + Unsplash + Pixabay | Free stock footage/images (developer keys are free to get) |
 | **Composition (React)** | Remotion | React-based rendering — spring-animated image scenes, text cards, stat cards, charts, TikTok-style word-level captions, TalkingHead |
@@ -445,7 +445,7 @@ Final video output -- only if self-review passes
 OpenMontage/
 ├── tools/              # 100+ Python tools (the agent's hands)
 │   ├── video/          # 13 video gen tools + compose, stitch, trim
-│   ├── audio/          # 4 TTS providers + Suno/ElevenLabs music, mixing, enhancement
+│   ├── audio/          # 8 TTS providers + Suno/ElevenLabs music, mixing, enhancement
 │   ├── graphics/       # 9 image/graphics generation tools + diagrams, code snippets, math
 │   ├── enhancement/    # Upscale, bg remove, face enhance, color grade
 │   ├── analysis/       # Transcription, scene detect, frame sampling
@@ -525,7 +525,7 @@ Each tool declares which Layer 3 skills it relies on. The agent reads Layer 1 to
 </details>
 
 <details>
-<summary><strong>Text-to-Speech — 5 providers</strong></summary>
+<summary><strong>Text-to-Speech — 6 providers</strong></summary>
 
 | Provider | Type | Notes |
 |----------|------|-------|
@@ -533,7 +533,8 @@ Each tool declares which Layer 3 skills it relies on. The agent reads Layer 1 to
 | **Google TTS** | Cloud API | 700+ voices, 50+ languages — best for localization |
 | **Kling Official TTS** | Cloud API | Official Kling narration when a `voice_id` is known |
 | **OpenAI TTS** | Cloud API | Fast, affordable |
-| **Piper** | Local | Completely free, offline |
+| **Kokoro-82M** | Local | Free and offline, no key — 54 voices, 9 languages. Model downloads itself on first use |
+| **Piper** | Local | Free and offline — needs a voice model downloaded separately |
 
 </details>
 
@@ -610,6 +611,7 @@ Style playbooks define the visual language for your productions:
 | **Clean Professional** | Corporate, educational, SaaS |
 | **Flat Motion Graphics** | Social media, TikTok, startups |
 | **Minimalist Diagram** | Technical deep-dives, architecture |
+| **Witness Archive** | Dark-history long-form, faceless narration channels |
 
 Playbooks control typography, color palettes, motion styles, audio profiles, and quality rules. The agent reads the playbook and applies it consistently across all generated assets.
 

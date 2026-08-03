@@ -419,6 +419,7 @@ Style playbooks in `styles/` define visual language for pipelines:
 - `clean-professional.yaml` — Corporate, polished look
 - `flat-motion-graphics.yaml` — Modern flat design
 - `minimalist-diagram.yaml` — Technical, minimal diagrams
+- `witness-archive.yaml` — Dark-history long-form; two visual registers (painterly narrative frames + chalk-on-slate explainer diagrams) and a locked recurring-character prompt block
 
 Loaded by `styles/playbook_loader.py`. Each pipeline declares `compatible_playbooks` in its manifest. Validated against `schemas/styles/playbook.schema.json`.
 

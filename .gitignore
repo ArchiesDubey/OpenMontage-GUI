@@ -69,6 +69,11 @@ skills-lock.json
 logo_*.png
 generated_image.png
 
+# Skill reference stills (generated PNG style targets — regenerable from the
+# skill's own image contract; keep them out of git history, they are large).
+# The skill's .md/.yaml text stays tracked.
+.claude/skills/**/references/stills/*.png
+
 # Downloaded music files (Pixabay, Freesound — not source code)
 pixabay_music_*
 

@@ -60,6 +60,38 @@ FLUX.2 supports up to 4 references (klein) or 8 references (pro/max/flex). Refer
 
 Use the same `seed` parameter across generations with similar prompts. Produces similar compositions but is fragile to prompt changes — use as supplement, not primary strategy.
 
+### Strategy 4 — Locked Style Block, Scene Text First
+
+Strategies 1-3 are for a single video. A **series** — a channel with a recurring character or
+a house look that must survive dozens of images across many episodes — needs the opposite of
+Strategy 1's "distill, don't paste": a short block that is prepended **verbatim** to every
+prompt and never re-authored per scene. The `witness-archive` playbook is the reference
+implementation (`asset_generation.image_prompt_prefix`, plus a separate `diagram_style` block
+for its second register).
+
+When a playbook supplies a locked block, the order is:
+
+```
+<scene description, 1-2 sentences>  +  <playbook image_prompt_prefix>
+```
+
+**Scene text goes first. Ordering is load-bearing, not cosmetic.** In a matched-seed A/B across
+8 environments, scene-first scored 7/8 on-model with rich, distinct environments. A
+character-first variant scored 6/8 with weak silhouettes and palette drift.
+
+**Never stack negations upstream of the thing you want.** A third variant put a wall of negations
+("no highlights, no rim light, darkest value") immediately before "glowing amber lantern." It
+wiped the environments to empty fog *and* deleted the lantern. FLUX has no negative-prompt field —
+everything you write is content the model tries to honor, and a negation adjacent to a positive
+clause reads as a modifier of it. Describe what should be present, not what should be absent.
+
+**Do not anchor scale proportionally.** "One fifth of frame height" held on no FLUX endpoint
+tested. Use qualitative wording ("full-body, never cropped, never dominating the frame"), expect
+roughly 1 in 8 frames to come back oversized, and re-roll rather than re-prompt — scale is the
+loosest axis and re-prompting for it costs the environments.
+
+Keep locked blocks short. The 582-character block outperformed the 807-character one.
+
 ## Prompt Construction — 3-Part Contextual Approach
 
 **Do NOT copy the playbook's `image_prompt_prefix` verbatim into every prompt.** That's what makes all scenes look the same. Instead, build each prompt from 3 contextual layers:
@@ -135,7 +167,45 @@ optimized for image/video generation providers.
 | **Diagram-style** | "Technical diagram, labeled components, clean lines, minimal color, white background" |
 | **Watercolor** | "Soft watercolor illustration, muted tones, visible brush strokes, paper texture" |
 
+## Text In Images — Hard Rule
+
+**Never ask a diffusion model for on-screen text.** Not titles, not labels, not axis ticks, not
+dates, not numbers. The output is gibberish, it is gibberish inconsistently, and it cannot be
+corrected by re-rolling or by better prompting. Every generated frame should carry the instruction
+`No text or numbers anywhere.`
+
+All on-screen type composites in the render layer — Remotion `text_card` / overlays, HyperFrames
+blocks, or FFmpeg subtitle burn. Type added there is crisp, correct, animatable, translatable,
+and editable after the image is final.
+
+**Diagram-style frames are the highest-risk case.** Anything that *resembles* type — chart axes,
+tally marks, timeline ticks, callout leaders, unit markers — pulls the model toward rendering
+nonsense digits even when no text was requested. Design diagram frames **label-free**: generate
+the marks, lines, and schematic shapes only, and composite every label as real type. If a diagram
+cannot carry its meaning without labels baked in, it is the wrong tool — use `diagram_gen` or a
+Remotion chart scene instead.
+
 ## Batch Generation Strategy
+
+### FLUX endpoint routing (fal.ai, via `flux_image`)
+
+Route by what the frame actually needs, not by a single project-wide default. `flux_image`
+exposes `model` — `flux-pro/v1.1` (default), `flux/dev`, `flux-pro`:
+
+| Endpoint | Approx cost | Use for |
+|----------|------------|---------|
+| `flux-pro/v1.1` | ~$0.04/MP | Frames where composition and figure scale must hold — a small subject staged inside a large environment |
+| `flux/dev` | ~$0.025/MP | General narrative frames. ~37% cheaper, near-equivalent on painterly/illustrative styles |
+| `flux/schnell` | ~$0.003/MP | High-volume, low-complexity frames (flat diagrams, chalk boards, texture plates). **Not in the `flux_image` `model` enum today** — reachable only by extending the tool |
+
+**fal.ai bills FLUX by megapixel, not per image**, and the dashboard reports no image count.
+Budget from total megapixels: a 1344x768 frame is ~1.03 MP. Long-form reference point — a
+~10-minute episode at 93 images on mixed routing came to ~$3.15 including re-rolls.
+
+Always route paid generation through the pipeline's `cost_tracker`. Calling `flux_image`
+directly bypasses cost logging and leaves `cost_usd: 0.0` in the manifests.
+
+### FLUX.2 quality tiers
 
 | Phase | Model | Cost/Image | Purpose |
 |-------|-------|-----------|---------|
@@ -149,7 +219,7 @@ optimized for image/video generation providers.
 
 ## Common Pitfalls
 
-1. **Text in images** — AI image generators are unreliable with text. Never include text in prompts; add text as overlays in the compose stage
+1. **Text in images** — never request it, and add `No text or numbers anywhere` to the prompt. See "Text In Images — Hard Rule" above; diagram-style frames are the trap
 2. **Hands and fingers** — AI image models still struggle. Avoid prompts requiring detailed hand poses
 3. **Inconsistent characters** — Without reference images, the same character will look different each time. Always use the hero reference strategy
 4. **Over-prompting** — Long, complex prompts produce unpredictable results. Keep to 2-3 sentences

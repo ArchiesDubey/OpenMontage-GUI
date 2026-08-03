@@ -62,6 +62,12 @@
         "additionalProperties": false
       }
     },
+    "cut_timing": {
+      "type": "string",
+      "enum": ["timeline", "source_trim"],
+      "default": "timeline",
+      "description": "How cuts[].in_seconds/out_seconds should be read. 'timeline' = positions on the output timeline (what the Remotion compositions expect: a cut is placed at in_seconds and the composition length comes from max(out_seconds)). 'source_trim' = in/out points inside each source file (what the FFmpeg path expects, and what the documentary-montage edit-director teaches). Declare this explicitly; when it is omitted video_compose infers it and reports the inference in render_report data.remotion_adaptation."
+    },
     "overlays": {
       "type": "array",
       "items": {

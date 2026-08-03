@@ -1,0 +1,175 @@
+identity:
+  name: "Witness Archive"
+  category: cinematic
+  mood: hushed, forensic, spectral
+  pace: deliberate
+  best_for: "Dark-history long-form: atrocities, disasters, human experimentation, origins of dangerous things. Faceless 8-20 minute narration channels."
+
+taste_profile:
+  design_read: "Dark-history archive: hushed, forensic and humane. The horror lives in the specificity of one real object, never in gore. Warm light against cold record."
+  visual_variance: 5
+  motion_intensity: 4
+  information_density: 3
+  palette_discipline: "Ash and sepia field, one amber accent that is always a light source, never a fill. No second accent, ever."
+  layout_variation: "Alternate wide silhouette-in-environment establishing frames with tight object-on-black inserts. Cut to the chalk register for any mechanism, map, timeline or chain of causation."
+  reference_strategy: "One locked reference still per environment family before batch generation. The character prefix is never re-authored per scene."
+  anti_patterns:
+    - "cute or expressive mascot behaviour"
+    - "graphic gore or depicted injury"
+    - "any second accent colour"
+    - "faces, eyes or mouths on the Witness"
+    - "generated on-screen text of any kind"
+  quality_gates:
+    - "Could this frame belong to Ink Explainer? If yes, redo it."
+    - "Is the lantern the warmest thing in frame?"
+    - "Is the Witness readable as a pure silhouette at thumbnail scale?"
+
+visual_language:
+  color_palette:
+    primary: ["#2A2724", "#6B5F52"]
+    accent: ["#E8A24B"]
+    background: "#2A2724"
+    text: "#C9BBA6"
+    muted: "#6B5F52"
+  composition: "Wide, low-horizon staging with deep haze planes. The Witness sits small in frame, side-on, never centred. Generous negative space above."
+  texture: "Painterly volumetric haze in the narrative register; chalk dust grain on black slate in the explainer register"
+
+typography:
+  headings:
+    font: "Inter"
+    weight: 800
+    tracking: "-0.02em"
+  body:
+    font: "Inter"
+    weight: 400
+    line_height: 1.5
+  stat_card:
+    font: "Inter"
+    weight: 800
+    size_multiplier: 3.4
+  scale_system: "major_third"
+  weight_matrix:
+    title: 800
+    heading: 700
+    body: 400
+    caption: 500
+
+motion:
+  transitions: [fade, dissolve, chalk-wipe]
+  animation_style: "slow push-ins and long holds; the polarity inversion into the chalk register is the only hard cut"
+  pacing_rules:
+    min_scene_hold_seconds: 4.0
+    max_scene_hold_seconds: 14
+    text_card_hold_seconds: 4.0
+    stat_card_hold_seconds: 3.5
+    transition_duration_seconds: 0.6
+  entrance: "slow opacity ramp out of black, no movement"
+  exit: "long dissolve; hard cut only when inverting into the chalk register"
+
+audio:
+  voice_style: "low, unhurried, close-mic'd; measured rather than sensational"
+  music_mood: "sparse sustained drones, low strings, occasional single piano note; no percussion beds"
+  music_volume: 0.14
+  sfx_style: "diegetic and sparse — a lantern creak, distant water, paper, wind"
+  ducking_threshold_db: -14
+
+asset_generation:
+  # LOCKED. Prepend verbatim to every narrative-register image prompt.
+  # Do not paraphrase, reorder or 'improve' this block — it is the consistency contract.
+  # LOCKED v3 — validated 2026-07-28 across 8 environments at matched seeds (7/8 on-model).
+  # Scene text goes FIRST, then this block. v2 (character-first, negation-heavy) killed the
+  # environments and the lantern — do not reorder or lengthen this.
+  # Model routing: narrative -> flux-pro/v1.1 ($0.04/MP); chalk -> flux/schnell ($0.003/MP).
+  # flux/dev was the earlier default but renders the figure too large in interiors.
+  image_prompt_prefix: >-
+    Atmospheric painterly digital illustration in warm ash and sepia tones
+    (#2A2724 charcoal, #6B5F52 grey-brown, #C9BBA6 pale bone), soft haze and depth.
+    Standing in this setting, off to one side, is one small hooded figure in side-on profile,
+    standing well back in the scene, always shown full-body from head to boots, never cropped and never
+    dominating the frame — holding a lit amber lantern (#E8A24B) that casts a warm glow
+    onto the ground around it — the only warm colour in the picture.
+    The figure is a compact dark shape: black cloak, ragged hem above the ankles, dark boots below,
+    and a hood whose opening is pure black shadow with no face. No text or numbers anywhere.
+  image_negative_prompt: ""
+  # Third register — CLOSE-UPS AND INSERTS. The Witness must NOT appear in these.
+  # Added 2026-07-28 after the first full batch put the character in all 75 narrative frames,
+  # including evidence inserts. A figure in every shot has no entrances left, and the coldest,
+  # most forensic images in the episode were spoiled by a hooded observer standing in them.
+  # Route by scene framing: close-up / extreme close-up -> this block.
+  # v2 of this block (2026-07-28): v1 was authored from scratch and drifted to glossy product
+  # photography, and used negations ("no hooded figure") which SUMMONED hooded figures — the
+  # same failure as the v2 prefix disaster. This version is image_prompt_prefix verbatim with
+  # the character sentence deleted and a positive framing clause in its place. Never negate.
+  insert_style: >-
+    Atmospheric painterly digital illustration in warm ash and sepia tones (#2A2724 charcoal,
+    #6B5F52 grey-brown, #C9BBA6 pale bone), soft haze and depth, matte surfaces and visible
+    brushwork. The subject fills the frame and rests in a shallow pool of warm amber light that
+    is the only warm colour in the picture, the surrounding room falling away into soft charcoal
+    shadow. Any writing present is soft, blurred and far too small to read. No text or numbers
+    anywhere.
+  # Fourth register — PEOPLED NARRATIVE SCENES. The Witness must NOT appear in these.
+  # Added 2026-08-01 after the first full render. Root cause: image_prompt_prefix was applied
+  # unconditionally, so in every scene whose description contained other human beings the
+  # "one small hooded figure" clause COMPETED with them and converted them into hooded figures.
+  # "Two women painting their teeth at a mirror" returned two wraiths; "five women seated on one
+  # bench" in the 1928 courtroom returned wraiths; so did the chemists, the gravediggers and the
+  # supervisor. The people the episode is ABOUT were erased into copies of the narrator.
+  # Route by scene content, not framing: if the scene description names any human subject,
+  # use THIS block and never the character prefix. The Witness observes; it does not replace.
+  # Positive framing only — naming the hooded figure to exclude it would summon it.
+  peopled_style: >-
+    Atmospheric painterly digital illustration in warm ash and sepia tones (#2A2724 charcoal,
+    #6B5F52 grey-brown, #C9BBA6 pale bone), soft haze and depth, matte surfaces and visible
+    brushwork. Everyone in this scene is an ordinary human being in period clothing, bare-headed,
+    with a clearly visible face and visible hands, painted with warm sympathy and individual
+    features. They are lit by the warm amber light of the room's own lamps and windows — the only
+    warm colour in the picture — and the space around them falls away into soft charcoal shadow.
+    Any writing present is soft, blurred and far too small to read. No text or numbers anywhere.
+  diagram_style: >-
+    White chalk drawing on a pure black slate blackboard, visible chalk grain and dust, loose confident
+    hand-drawn line work, white lines on black, generous negative space. This is a technical diagram, not
+    a scene: no people, no characters, no hooded figures, no lanterns — only drawn marks, lines, curves,
+    axes and simple schematic shapes. One single ember-orange accent may mark the most important element. No text, no letters, no numbers anywhere.
+  consistency_anchors:
+    - "Solid flat black silhouette — zero interior detail is what keeps the character stable across episodes"
+    - "Void hood opening, never a face"
+    - "Ragged hem ending above the ankles with two boots visible below it"
+    - "Exactly one amber lantern (#E8A24B), always the only saturated colour"
+    - "Strict side-on profile staging; the rig-friendly angle is also the drift-resistant one"
+    - "Figure full-body, never cropped, never dominating — a fixed fraction was tried and no model holds it"
+    - "Amber is always emitted light, never a painted fill"
+    - "The Witness appears ONLY in the narrative register. Chalk is pure diagram — no characters, ever."
+    - "Narrative frames render on flux-pro/v1.1 (holds the small-figure scale); chalk renders on flux/schnell"
+    - "PREFIX ORDER IS LOAD-BEARING: scene description first, style block second"
+    - "For diagrams, describe the LINE'S PATH THROUGH THE FRAME (begins top-left, descends, flattens
+       into a tail) — never name the concept (decay curve) or negate (never rising). Naming yields
+       bell curves; describing the path yields the right shape. flux/schnell handles these best."
+    - "Scale is the loosest axis — expect ~1 in 8 to come back oversized and re-roll it"
+    - "ROUTE BY SCENE CONTENT BEFORE FRAMING. If the description names any human subject, use
+       peopled_style — never the character prefix. The prefix is only for scenes where the Witness
+       is the ONLY figure. Applying it to a peopled scene converts that scene's people into hooded
+       figures; this cost 10 frames in E01, including the five named plaintiffs."
+    - "The hero object must be named in its own close-up and verified against the script's noun.
+       'A 1918 wristwatch' returned a POCKET watch in both the cold open and the closing shot —
+       the two frames that carry the channel's whole object-first device."
+
+overlays:
+  stat_card:
+    bg: "#1A1817"
+    border: "#6B5F52"
+    text: "#C9BBA6"
+    radius: 2
+    highlight: "#E8A24B"
+  key_term:
+    bg: "#000000"
+    text: "#FFFFFF"
+    highlight: "#E8A24B"
+
+quality_rules:
+  - "All on-screen text is composited in the render layer as real type — never generated into the image"
+  - "Chapter cards use the chalk register, not the painterly one"
+  - "Never generate text into an image; diffusion output is always gibberish"
+  - "The Witness never speaks, never gains a face, and never changes silhouette"
+  - "Amber appears only as emitted light from the lantern"
+  - "No gore; the horror is carried by the artifact and the narration"
+  - "Every episode cold-opens on one concrete physical object that still exists"

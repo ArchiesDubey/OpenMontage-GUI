@@ -62,7 +62,7 @@ class FluxImage(BaseTool):
             "height": {"type": "integer", "default": 1024},
             "model": {
                 "type": "string",
-                "enum": ["flux-pro/v1.1", "flux/dev", "flux-pro"],
+                "enum": ["flux-pro/v1.1", "flux/dev", "flux/schnell", "flux-pro"],
                 "default": "flux-pro/v1.1",
             },
             "seed": {"type": "integer"},
@@ -142,7 +142,30 @@ class FluxImage(BaseTool):
 
             output_path = Path(inputs.get("output_path", "generated_image.png"))
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            output_path.write_bytes(image_response.content)
+            raw = image_response.content
+
+            # fal returns JPEG for several endpoints (flux/schnell, flux-pro). Writing those
+            # bytes straight to a .png path produces a file whose extension lies about its
+            # contents — downstream tools that sniff by extension (ffmpeg's image demuxer,
+            # asset_manifest `format`) then fail or mis-report. Transcode to match the suffix.
+            suffix = output_path.suffix.lower()
+            is_jpeg = raw[:3] == b"\xff\xd8\xff"
+            is_png = raw[:8] == b"\x89PNG\r\n\x1a\n"
+            if (suffix == ".png" and not is_png) or (suffix in (".jpg", ".jpeg") and not is_jpeg):
+                try:
+                    import io
+
+                    from PIL import Image as _PILImage
+
+                    with _PILImage.open(io.BytesIO(raw)) as _im:
+                        _im = _im.convert("RGB")
+                        _im.save(output_path, "PNG" if suffix == ".png" else "JPEG")
+                except Exception:
+                    # Pillow unavailable or transcode failed — keep the original bytes rather
+                    # than losing the generation, but the mismatch stands.
+                    output_path.write_bytes(raw)
+            else:
+                output_path.write_bytes(raw)
 
         except Exception as e:
             return ToolResult(success=False, error=f"FLUX generation failed: {e}")

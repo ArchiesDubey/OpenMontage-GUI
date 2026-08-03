@@ -105,7 +105,7 @@ Key capability families to look for in the output:
 | Sound Design | `creative/sound-design.md` | Audio ducking, LUFS targets, SFX timing, AI TTS mixing | `elevenlabs` |
 | Typography | `creative/typography.md` | Font selection, text sizing, safe zones, caption styling | â€" |
 | ManimCE Usage | `creative/manim-usage.md` | Scene composition, animation timing, color usage | `manimce-best-practices` |
-| Image Gen Usage | `creative/image-gen-usage.md` | Prompt consistency, hero reference, batch strategy | `flux-best-practices`, `bfl-api` |
+| Image Gen Usage | `creative/image-gen-usage.md` | Prompt consistency, hero reference, locked style blocks + prompt ordering, no-generated-text rule, FLUX endpoint routing, batch strategy | `flux-best-practices`, `bfl-api` |
 | Image Provider Usage | `creative/image-provider-usage.md` | Provider selection (FLUX/Grok/OpenAI/Recraft/stock), cost-quality tradeoffs | `flux-best-practices`, `bfl-api`, `grok-media` |
 | B-Roll Planning | `creative/broll-planning.md` | Stock vs. generated decision, query construction, footage evaluation | — |
 | Stock Sourcing Usage | `creative/stock-sourcing-usage.md` | Pexels/Pixabay usage, parameters, licensing, integration | — |
@@ -295,8 +295,16 @@ Style playbooks (`styles/*.yaml`) define visual language, typography, motion, au
 | `premium-minimalist` | minimalist | calm, editorial | Investor updates, expert explainers, product narratives |
 | `flat-motion-graphics` | motion-graphics | energetic, bold | Social media, TikTok, startups |
 | `minimalist-diagram` | whiteboard | focused, technical | Technical deep-dives, architecture |
+| `witness-archive` | cinematic | hushed, forensic, spectral | Dark-history long-form: atrocities, disasters, origins of dangerous things. Faceless 8-20 minute narration channels |
 
 Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`
+
+`witness-archive` carries a **locked `image_prompt_prefix`** — a verbatim character/style block
+prepended to every narrative-register prompt for cross-episode continuity, plus a separate
+`diagram_style` block for its chalk register. Locked blocks have their own prompt-ordering rules;
+see "Strategy 4 — Locked Style Block, Scene Text First" in `creative/image-gen-usage.md`.
+The channel workflow that drives it (episode ideation, narration voice, quality gates) lives in
+the `/witness-archive` skill at `.claude/skills/witness-archive/`.
 
 ## Installed Agent Skills (Layer 3)
 

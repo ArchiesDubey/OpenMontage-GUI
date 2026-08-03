@@ -1407,9 +1407,14 @@ class VideoCompose(BaseTool):
             )
         # --- Explicit Remotion path (render_runtime == 'remotion') ---
         if self._needs_remotion(resolved_cuts):
+            # The schema→component bridge lives in _remotion_render so that the
+            # public operation="remotion_render" entry point gets it too. Only the
+            # asset_manifest (needed to resolve project-relative paths) is
+            # forwarded from here.
             remotion_inputs: dict[str, Any] = {
                 "edit_decisions": dict(edit_decisions, cuts=resolved_cuts),
                 "output_path": str(output_path),
+                "asset_manifest": asset_manifest,
             }
             if profile:
                 remotion_inputs["profile"] = profile
@@ -1492,6 +1497,258 @@ class VideoCompose(BaseTool):
 
         return render_result
 
+    # ------------------------------------------------------------------
+    # Remotion adaptation layer
+    #
+    # The artifact schemas and the Remotion components disagree in three
+    # places. Each mismatch fails *silently* — the render succeeds and
+    # produces a file that is wrong — so they are bridged here rather than
+    # left for each caller to rediscover.
+    # ------------------------------------------------------------------
+
+    _REMOTION_PUBLIC_SUBDIR = "om-assets"
+
+    @staticmethod
+    def _composer_dir() -> Path:
+        return Path(__file__).resolve().parent.parent.parent / "remotion-composer"
+
+    @staticmethod
+    def _resolve_asset_path(raw: str, asset_manifest: dict[str, Any] | None) -> Path | None:
+        """Best-effort resolution of a manifest path to a real file.
+
+        asset_manifest paths are documented as "relative path within the pipeline
+        project directory", but the render process CWD is usually the repo root,
+        so a plain resolve() misses them.
+        """
+        if not raw:
+            return None
+        p = Path(raw)
+        if p.is_absolute():
+            return p if p.exists() else None
+        if p.exists():
+            return p.resolve()
+        project_id = ((asset_manifest or {}).get("metadata") or {}).get("project_id")
+        if project_id:
+            candidate = Path("projects") / project_id / raw
+            if candidate.exists():
+                return candidate.resolve()
+        return None
+
+    @classmethod
+    def _stage_one_for_remotion(
+        cls, raw: str, asset_manifest: dict[str, Any] | None
+    ) -> str | None:
+        """Copy one asset under remotion-composer/public/ and return its
+        staticFile()-relative path.
+
+        Remotion's components resolve sources through staticFile(), and Chrome
+        refuses to load file:// URLs inside the renderer, so an asset that lives
+        outside public/ cannot be loaded at all — it 404s mid-render.
+        """
+        import hashlib
+        import shutil
+
+        src = cls._resolve_asset_path(raw, asset_manifest)
+        if src is None or not src.is_file():
+            return None
+
+        # Namespace by source directory so identically-named files from
+        # different folders (assets/video/sc01.mp4 vs assets/images/sc01.png)
+        # cannot collide in the flat public tree.
+        digest = hashlib.sha1(str(src.parent).encode("utf-8")).hexdigest()[:8]
+        rel = f"{cls._REMOTION_PUBLIC_SUBDIR}/{digest}/{src.name}"
+        dest = cls._composer_dir() / "public" / rel
+
+        try:
+            if (not dest.exists()
+                    or dest.stat().st_size != src.stat().st_size
+                    or dest.stat().st_mtime < src.stat().st_mtime):
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src, dest)
+        except OSError:
+            return None
+        return rel
+
+    @classmethod
+    def _stage_assets_for_remotion(
+        cls, cuts: list[dict[str, Any]], asset_manifest: dict[str, Any] | None
+    ) -> tuple[list[dict[str, Any]], list[str], list[str]]:
+        """Stage every cut source into public/ and rewrite it to a relative path.
+
+        Returns ``(cuts, staged_descriptions, unresolved_sources)``. Unresolved
+        sources are returned rather than passed through untouched: a cut whose
+        source the renderer cannot load produces a blank scene, and the caller
+        needs to fail on that instead of shipping it.
+        """
+        staged: list[dict[str, Any]] = []
+        descriptions: list[str] = []
+        unresolved: list[str] = []
+
+        for cut in cuts:
+            new_cut = dict(cut)
+            src = new_cut.get("source", "")
+            # Remote and inline sources load over the network as-is; scene-type
+            # cuts (text_card, stat_card, …) legitimately carry no source.
+            if src and not src.startswith(("http://", "https://", "data:")):
+                rel = cls._stage_one_for_remotion(src, asset_manifest)
+                if rel:
+                    new_cut["source"] = rel
+                    descriptions.append(f"{cut.get('id', '?')}: {src} -> public/{rel}")
+                else:
+                    unresolved.append(f"{cut.get('id', '?')}: {src}")
+            staged.append(new_cut)
+
+        return staged, descriptions, unresolved
+
+    @staticmethod
+    def _adapt_cut_timing_for_remotion(
+        cuts: list[dict[str, Any]], declared: str | None = None
+    ) -> tuple[list[dict[str, Any]], str | None]:
+        """Ensure cuts[].in/out_seconds are TIMELINE positions, not source trims.
+
+        The same two schema fields mean different things in the two engines, and
+        the schema does not say which:
+
+        - FFmpeg (`_render_via_ffmpeg`) reads them as SOURCE TRIM points — it
+          seeks to `in_seconds` within the source file and takes `out - in`.
+        - Remotion reads them as TIMELINE positions — `Explainer` places a cut at
+          `from = in_seconds * fps`, and `Root.tsx`'s `calculateMetadata` derives
+          the whole composition length from `max(out_seconds)`.
+
+        So cuts authored the FFmpeg way (every `in_seconds` 0, `out_seconds`
+        holding a clip length) collapse a Remotion render to the length of its
+        single longest scene — a silent, catastrophic failure.
+
+        `edit_decisions.cut_timing` ("timeline" or "source_trim") declares the
+        intent explicitly and is always honoured. Only when it is absent does
+        this fall back to inferring the shape, and an inferred rewrite is
+        reported back to the caller rather than applied silently.
+        """
+        if not cuts:
+            return cuts, None
+
+        ins = [float(c.get("in_seconds") or 0.0) for c in cuts]
+        outs = [float(c.get("out_seconds") or 0.0) for c in cuts]
+
+        if declared == "timeline":
+            return cuts, None
+        if declared != "source_trim":
+            # Timeline-style: starts advance, and each cut begins at/after the
+            # previous cut's end. A cut may legitimately start *before* the
+            # previous one ends when they overlap for a dissolve, so allow that
+            # overlap up to the declared transition duration — otherwise every
+            # cross-dissolved timeline would be misread as source trims and get
+            # flattened.
+            monotonic = all(ins[i] <= ins[i + 1] for i in range(len(ins) - 1))
+            chained = all(
+                outs[i] <= ins[i + 1] + max(
+                    float(cuts[i].get("transition_duration") or 0.0),
+                    float(cuts[i + 1].get("transition_duration") or 0.0),
+                ) + 1e-6
+                for i in range(len(cuts) - 1)
+            )
+            if monotonic and chained and max(ins) > 0:
+                return cuts, None
+
+        adapted, cursor = [], 0.0
+        for cut, a, b in zip(cuts, ins, outs):
+            new_cut = dict(cut)
+            length = max(0.0, b - a)
+            if length <= 0:
+                length = 1.0
+            new_cut["in_seconds"] = round(cursor, 3)
+            new_cut["out_seconds"] = round(cursor + length, 3)
+            # Preserve any real source offset the caller intended.
+            new_cut.setdefault("source_in_seconds", round(a, 3))
+            adapted.append(new_cut)
+            cursor += length
+
+        note = (
+            f"cuts read as source_trim and laid out sequentially into a "
+            f"{round(cursor, 3)}s timeline; original in_seconds preserved as "
+            f"source_in_seconds"
+        )
+        if declared != "source_trim":
+            note += (
+                " (inferred — set edit_decisions.cut_timing to 'timeline' or "
+                "'source_trim' to declare this explicitly)"
+            )
+        return adapted, note
+
+    @classmethod
+    def _adapt_audio_for_remotion(
+        cls, edit_decisions: dict[str, Any], asset_manifest: dict[str, Any] | None
+    ) -> tuple[dict[str, Any] | None, list[str]]:
+        """Convert the schema's audio block into the component's AudioConfig.
+
+        Schema shape:  audio.narration.segments[].asset_id, audio.music.asset_id
+        Component shape: {narration: {src, volume}, music: {src, volume, loop, ...}}
+
+        Without this the component finds no `src`, mounts no <Audio>, and renders
+        a completely silent video while still reporting success.
+
+        Returns ``(audio_config, warnings)``. A track that was requested but could
+        not be resolved is reported rather than dropped in silence — silence is
+        the exact failure mode this method exists to prevent.
+        """
+        lookup = {a["id"]: a for a in (asset_manifest or {}).get("assets", [])}
+        warnings: list[str] = []
+
+        def stage(asset_id: str | None) -> str | None:
+            if not asset_id:
+                return None
+            entry = lookup.get(asset_id)
+            raw = entry.get("path") if entry else asset_id
+            return cls._stage_one_for_remotion(raw, asset_manifest)
+
+        audio_in = edit_decisions.get("audio") or {}
+        out: dict[str, Any] = {}
+
+        narration = audio_in.get("narration") or {}
+        if isinstance(narration, dict):
+            src = narration.get("src")
+            if not src:
+                segments = narration.get("segments") or []
+                # Prefer a single stitched master; fall back to the first segment.
+                master = next(
+                    (a["id"] for a in (asset_manifest or {}).get("assets", [])
+                     if a.get("type") == "narration" and a.get("subtype") == "master"),
+                    None,
+                )
+                src = stage(master) or (stage(segments[0].get("asset_id")) if segments else None)
+            else:
+                src = cls._stage_one_for_remotion(src, asset_manifest) or src
+            if src:
+                out["narration"] = {"src": src, "volume": narration.get("volume", 1.0)}
+            elif narration:
+                warnings.append(
+                    "narration was requested but no audio file could be resolved "
+                    "— the render will be silent"
+                )
+
+        # audio.music is preferred; the legacy top-level music block is a fallback.
+        music_in = audio_in.get("music") or edit_decisions.get("music") or {}
+        if isinstance(music_in, dict) and (music_in.get("asset_id") or music_in.get("src")):
+            src = music_in.get("src")
+            src = (cls._stage_one_for_remotion(src, asset_manifest) if src
+                   else stage(music_in.get("asset_id")))
+            if src:
+                out["music"] = {
+                    "src": src,
+                    "volume": music_in.get("volume", 0.12),
+                    "fadeInSeconds": music_in.get("fade_in_seconds", 0.0),
+                    "fadeOutSeconds": music_in.get("fade_out_seconds", 0.0),
+                    "offsetSeconds": music_in.get("offset_seconds", 0.0),
+                    "loop": music_in.get("loop", True),
+                }
+            else:
+                warnings.append(
+                    "music was requested but no audio file could be resolved "
+                    "— the render will have no music bed"
+                )
+
+        return (out or None), warnings
+
     def _render_via_hyperframes(
         self,
         *,
@@ -1568,6 +1825,8 @@ class VideoCompose(BaseTool):
             hf_inputs["strict"] = inputs["strict"]
         if "skip_contrast" in inputs:
             hf_inputs["skip_contrast"] = inputs["skip_contrast"]
+        if "workers" in inputs:
+            hf_inputs["workers"] = inputs["workers"]
 
         render_result = HyperFramesCompose().execute(hf_inputs)
 
@@ -1700,15 +1959,51 @@ class VideoCompose(BaseTool):
         # Deep-copy props so we don't mutate the original
         props = json.loads(json.dumps(composition_data))
 
-        # Convert absolute file paths to file:// URIs for Remotion's
-        # Img and OffthreadVideo components
-        for cut in props.get("cuts", []):
-            source = cut.get("source", "")
-            if source and not source.startswith(("http://", "https://", "file://")):
-                resolved = Path(source).resolve()
-                if resolved.exists():
-                    posix = resolved.as_posix()
-                    cut["source"] = f"file:///{posix}" if not posix.startswith("/") else f"file://{posix}"
+        # Bridge the artifact schema to what the Remotion components actually
+        # consume. Each mismatch below otherwise fails *silently* — the render
+        # reports success and produces a wrong file. See the "Remotion adaptation
+        # layer" section for the details of each.
+        asset_manifest = inputs.get("asset_manifest")
+        adaptation: dict[str, Any] = {}
+
+        props["cuts"], staging_warnings, unresolved = self._stage_assets_for_remotion(
+            props.get("cuts", []), asset_manifest
+        )
+        # A source we cannot stage cannot be loaded by the renderer at all. Fail
+        # here rather than 404-ing mid-render into a video of blank scenes — this
+        # matches the FFmpeg branch, which errors on a missing cut source.
+        if unresolved:
+            return ToolResult(
+                success=False,
+                error=(
+                    "Remotion render aborted: "
+                    f"{len(unresolved)} cut source(s) could not be resolved to a file "
+                    "on disk, so they cannot be staged into remotion-composer/public/ "
+                    "and would render as blank scenes.\n  "
+                    + "\n  ".join(unresolved[:10])
+                    + ("\n  ..." if len(unresolved) > 10 else "")
+                    + "\n\nasset_manifest paths are project-relative; pass "
+                    "asset_manifest so they can be resolved against "
+                    "projects/<project_id>/, or use absolute paths."
+                ),
+            )
+        if staging_warnings:
+            adaptation["assets_staged"] = staging_warnings
+
+        props["cuts"], timing_note = self._adapt_cut_timing_for_remotion(
+            props["cuts"], declared=composition_data.get("cut_timing")
+        )
+        if timing_note:
+            adaptation["cut_timing"] = timing_note
+
+        adapted_audio, audio_warnings = self._adapt_audio_for_remotion(
+            composition_data, asset_manifest
+        )
+        if adapted_audio:
+            props["audio"] = adapted_audio
+            adaptation["audio"] = f"adapted to AudioLayer shape: {sorted(adapted_audio)}"
+        if audio_warnings:
+            adaptation["audio_warnings"] = audio_warnings
 
         # Build a custom themeConfig from the playbook's actual colors.
         # This ensures every video gets a unique visual identity derived
@@ -1821,6 +2116,10 @@ class VideoCompose(BaseTool):
                 "operation": "remotion_render",
                 "output": str(output_path),
                 "profile": profile_name,
+                # Every substitution this tool made on the caller's behalf. Kept
+                # visible so a silently-adapted render is auditable rather than
+                # a mystery — see AGENT_GUIDE.md "Do not hide degraded paths".
+                "remotion_adaptation": adaptation,
             },
             artifacts=[str(output_path)],
         )

@@ -179,6 +179,16 @@ class HyperFramesCompose(BaseTool):
                 "enum": [24, 30, 60],
                 "default": 30,
             },
+            "workers": {
+                "type": "integer",
+                "minimum": 1,
+                "description": (
+                    "Parallel render workers. Each spawns its own Chrome (~256 MB), and the "
+                    "CLI default of `auto` scales to core count — which OOMs mid-render on a "
+                    "memory-constrained host (`hyperframes doctor` flags this as a failing "
+                    "Memory check). Lower it to trade render time for headroom. Omit for `auto`."
+                ),
+            },
             "strict": {
                 "type": "boolean",
                 "default": False,
@@ -712,6 +722,8 @@ class HyperFramesCompose(BaseTool):
             "--fps", str(fps),
             "--quality", quality,
         ]
+        if inputs.get("workers"):
+            args += ["--workers", str(int(inputs["workers"]))]
         proc = self._run_hf(args, cwd=workspace, timeout=1800, check=False)
         steps["render"] = {
             "exit_code": proc.returncode,
@@ -803,7 +815,11 @@ class HyperFramesCompose(BaseTool):
             resolved_cut = dict(cut)
             if source in asset_lookup:
                 resolved_cut["source"] = asset_lookup[source].get("path", source)
-            src_path = Path(resolved_cut["source"]) if resolved_cut.get("source") else None
+            src_path = (
+                self._resolve_manifest_path(resolved_cut["source"], workspace)
+                if resolved_cut.get("source")
+                else None
+            )
             if src_path and src_path.exists() and not self._is_inside(src_path, workspace):
                 dest = assets_dir / src_path.name
                 if not dest.exists() or dest.stat().st_size != src_path.stat().st_size:
@@ -828,7 +844,7 @@ class HyperFramesCompose(BaseTool):
             aid = seg.get("asset_id")
             if not aid or aid not in asset_lookup:
                 continue
-            src = Path(asset_lookup[aid].get("path", ""))
+            src = self._resolve_manifest_path(asset_lookup[aid].get("path", ""), workspace)
             if not src.exists():
                 continue
             if not self._is_inside(src, workspace):
@@ -848,7 +864,7 @@ class HyperFramesCompose(BaseTool):
         music = audio.get("music", {})
         m_id = music.get("asset_id")
         if m_id and m_id in asset_lookup:
-            src = Path(asset_lookup[m_id].get("path", ""))
+            src = self._resolve_manifest_path(asset_lookup[m_id].get("path", ""), workspace)
             if src.exists():
                 if not self._is_inside(src, workspace):
                     dest = assets_dir / src.name
@@ -872,6 +888,25 @@ class HyperFramesCompose(BaseTool):
             return True
         except ValueError:
             return False
+
+    @staticmethod
+    def _resolve_manifest_path(raw: str, workspace: Path) -> Path:
+        """Resolve an asset_manifest path to something that exists on disk.
+
+        asset_manifest.schema.json documents `path` as "Relative path within the
+        pipeline project directory" — e.g. `assets/images/final/sc001.png`. Those
+        paths only resolve against the project root, not the process CWD, so a
+        bare Path(raw).exists() is False whenever the pipeline is driven from the
+        repo root. Staging then silently no-ops and the unresolved relative path
+        is written into the composition HTML, where `hyperframes lint` fails it as
+        missing_local_asset. Anchor on the project dir (the workspace's parent)
+        before falling back to CWD-relative.
+        """
+        p = Path(raw)
+        if p.is_absolute() or p.exists():
+            return p
+        candidate = workspace.parent / raw
+        return candidate if candidate.exists() else p
 
     def _style_bridge(
         self,

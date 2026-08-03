@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import time
@@ -33,13 +34,16 @@ class PiperTTS(BaseTool):
     determinism = Determinism.DETERMINISTIC
     runtime = ToolRuntime.LOCAL
 
-    dependencies = ["cmd:piper"]
+    dependencies = ["cmd:piper", "env:PIPER_VOICE_DIR (optional)"]
     install_instructions = (
         "Install Piper TTS:\n"
         "  pip install piper-tts\n"
         "Or download from https://github.com/rhasspy/piper/releases\n"
-        "Then download a voice model:\n"
-        "  piper --download-dir ~/.piper/models --model en_US-lessac-medium"
+        "Then download a voice model (the binary alone cannot speak):\n"
+        "  piper --download-dir ~/.piper/models --model en_US-lessac-medium\n"
+        "Voice models are looked for in ~/.piper/models,\n"
+        "~/.local/share/piper/voices and ~/.local/share/piper-tts/voices.\n"
+        "Set PIPER_VOICE_DIR to add another directory to that search."
     )
     agent_skills = ["text-to-speech"]
 
@@ -95,10 +99,45 @@ class PiperTTS(BaseTool):
     side_effects = ["writes audio file to output_path"]
     user_visible_verification = ["Listen to generated audio for intelligibility"]
 
+    # Voice models ship separately from the binary. These are the directories the
+    # documented `--download-dir` flow and the common packages write them to.
+    _VOICE_DIRS = [
+        "~/.piper/models",
+        "~/.local/share/piper/voices",
+        "~/.local/share/piper-tts/voices",
+    ]
+
+    @classmethod
+    def _has_voice_model(cls) -> bool:
+        """Is at least one downloadable voice model present?
+
+        The piper package bundles helper models (Arabic tashkeel, Hebrew nakdimon)
+        that are not voices, so scanning site-packages would give a false positive.
+        Only the user-populated voice directories count.
+        """
+        search_dirs = [Path(d).expanduser() for d in cls._VOICE_DIRS]
+        env_dir = os.environ.get("PIPER_VOICE_DIR")
+        if env_dir:
+            search_dirs.insert(0, Path(env_dir).expanduser())
+
+        return any(
+            d.is_dir() and any(d.rglob("*.onnx"))
+            for d in search_dirs
+        )
+
     def get_status(self) -> ToolStatus:
-        if shutil.which("piper"):
-            return ToolStatus.AVAILABLE
-        return ToolStatus.UNAVAILABLE
+        """Report DEGRADED when the binary exists but no voice model does.
+
+        Reporting AVAILABLE on the strength of the binary alone lets preflight pass
+        and then fails deep inside the assets stage, when narration is already
+        being generated. DEGRADED keeps the selector from routing here while still
+        showing the user that piper is one download away from working.
+        """
+        if not shutil.which("piper"):
+            return ToolStatus.UNAVAILABLE
+        if not self._has_voice_model():
+            return ToolStatus.DEGRADED
+        return ToolStatus.AVAILABLE
 
     def estimate_cost(self, inputs: dict[str, Any]) -> float:
         return 0.0

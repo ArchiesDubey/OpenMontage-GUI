@@ -48,6 +48,13 @@
 
 ## Provider-Specific Caveats
 
+### Google Imagen (`google_imagen`)
+- **Observed returning HTTP 404 on every call (2026-07)** against a configured `GOOGLE_API_KEY`,
+  on the default `imagen-4.0-generate-001` model. Cause not diagnosed. Sample once before
+  planning a batch around it; if it 404s, treat it as unavailable, route to `flux_image` or
+  `openai_image`, and log the substitution as a `provider_selection` decision rather than
+  swapping silently.
+
 ### Recraft V4 via fal.ai
 - **`style` parameter causes 422 errors** (as of 2026-04). The `style` enum values (`digital_illustration`, `realistic_image`, etc.) are rejected by fal.ai's Recraft V4 endpoint. **Workaround:** encode style direction in the prompt text instead (e.g. "digital illustration of a tooth cross-section" rather than `style="digital_illustration"`). The `image_size` and `colors` parameters work fine.
 - **Text rendering is unreliable for exact business names.** Recraft (like all AI image models) may hallucinate wrong text. For any scene where text must be verbatim (CTA screens, business names, phone numbers), use Remotion `text_card` instead of generating an image with text.
