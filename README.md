@@ -11,11 +11,7 @@
 
 <p align="center"><strong>The browser-based control panel for OpenMontage — the first open-source, agentic video production system.</strong></p>
 
-<p align="center"><sub>A GUI-enhanced fork of <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>, adding <a href="#launch-the-openmontage-gui">Backlot</a>: a live storyboard, one-click agent launcher, and approval cockpit on top of the same 12 pipelines, 100+ tools, and 700+ skill files.</sub></p>
-
-<p align="center">
-  <a href="https://openmontage.video"><img src="https://img.shields.io/badge/Website-openmontage.video-d14a28?style=for-the-badge" alt="openmontage.video"></a>
-</p>
+<p align="center"><sub>A GUI-enhanced fork of <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>, adding <a href="#launch-the-openmontage-gui">Backlot</a>: a live storyboard, one-click agent launcher, and approval cockpit on top of the same 12 pipelines, 100+ tools, and 700+ skill files. For the upstream project's own site, releases, and community, see <a href="https://openmontage.video">openmontage.video</a> and <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>.</sub></p>
 
 <p align="center">
   <a href="#launch-the-openmontage-gui">Launch the GUI</a> &nbsp;·&nbsp;
@@ -24,7 +20,6 @@
   <a href="#try-these-prompts">Try These Prompts</a> &nbsp;·&nbsp;
   <a href="#pipelines">Pipelines</a> &nbsp;·&nbsp;
   <a href="#how-it-works">How It Works</a> &nbsp;·&nbsp;
-  <a href="#sponsors">Sponsors</a> &nbsp;·&nbsp;
   <a href="docs/PROVIDERS.md">Providers</a> &nbsp;·&nbsp;
   <a href="docs/PR_REVIEW_GUIDE.md">Review Guide</a> &nbsp;·&nbsp;
   <a href="AGENT_GUIDE.md">Agent Guide</a>
@@ -33,43 +28,6 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPLv3-blue.svg" alt="License"></a>
 </p>
-
-<p align="center">
-  <a href="https://github.com/trending">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/repo-of-the-day-dark.svg">
-      <img alt="🏆 #1 Repository of the Day on GitHub Trending" src=".github/assets/repo-of-the-day-light.svg" height="60">
-    </picture>
-  </a>
-</p>
-
-<p align="center"><strong>Follow The Build</strong></p>
-
-<p align="center">
-  <a href="https://www.youtube.com/@OpenMontage"><img src="https://img.shields.io/badge/YouTube-%40OpenMontage-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://x.com/calesthioailabs"><img src="https://img.shields.io/badge/X-%40calesthioailabs-111111?style=for-the-badge&logo=x&logoColor=white" alt="X"></a>
-  <a href="https://github.com/calesthio/OpenMontage/discussions"><img src="https://img.shields.io/badge/Community-GitHub%20Discussions-0b1220?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Discussions"></a>
-</p>
-
-## Sponsors
-
-> Want to support OpenMontage? [Sponsor the project](https://github.com/sponsors/calesthio).
-
-<details open>
-<summary>Click to collapse</summary>
-
-<table>
-<tr>
-<td width="180" align="center"><a href="https://bloome.im/app?ref=calesthio&utm_medium=github&utm_source=calesthio-OpenMontage-ivor-202607"><img src="assets/sponsors/bloome.png" alt="Bloome" width="150"></a></td>
-<td><strong>Bloome</strong> lets multiple AI agents (Claude, ChatGPT, DeepSeek, and more) collaborate in one conversation for agentic video pipelines. It has zero setup, runs in the cloud, works on web and mobile, and lets you share a configured agent with your whole team. <strong><a href="https://bloome.im/app?ref=calesthio&utm_medium=github&utm_source=calesthio-OpenMontage-ivor-202607">Try Bloome</a></strong>.</td>
-</tr>
-<tr>
-<td width="180" align="center"><a href="https://www.atlascloud.ai/coding-plan"><img src="assets/sponsors/atlas-cloud.png" alt="Atlas Cloud" width="150"></a></td>
-<td><strong>Atlas Cloud</strong> is a full-modal AI inference platform that gives developers a single AI API for video generation, image generation, and LLM APIs. Instead of managing multiple vendor integrations, you connect once and get unified access to 300+ curated models across all modalities. Check out Atlas Cloud's new <a href="https://www.atlascloud.ai/coding-plan">coding plan</a> promotion for more budget-friendly API access.</td>
-</tr>
-</table>
-
-</details>
 
 ---
 
@@ -807,4 +765,4 @@ make test
 
 If this project looks useful to you, a ⭐ would really mean a lot — it helps others discover it too.
 
-If you'd like to go further, [sponsor the project](https://github.com/sponsors/calesthio) — OpenMontage is built nights and weekends, and your support makes that sustainable.
+If you'd like to go further, [sponsor the upstream OpenMontage project](https://github.com/sponsors/calesthio) — it's built nights and weekends by its maintainer, and your support makes that sustainable.
