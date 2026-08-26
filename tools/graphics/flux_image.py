@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import time
 from pathlib import Path
@@ -23,7 +24,7 @@ from tools.base_tool import (
 
 class FluxImage(BaseTool):
     name = "flux_image"
-    version = "0.1.0"
+    version = "0.2.0"
     tier = ToolTier.GENERATE
     capability = "image_generation"
     provider = "flux"
@@ -48,7 +49,7 @@ class FluxImage(BaseTool):
     best_for = [
         "photorealistic images",
         "general-purpose image generation",
-        "high quality at low cost (~$0.03/image)",
+        "high quality at low cost (~$0.025/megapixel)",
     ]
     not_good_for = ["text rendering in images", "offline generation"]
 
@@ -88,11 +89,33 @@ class FluxImage(BaseTool):
             return ToolStatus.AVAILABLE
         return ToolStatus.UNAVAILABLE
 
+    # fal.ai billing model (verified against fal.ai model pages, 2026-08):
+    #   flux/dev     — $0.025 per megapixel
+    #   flux/schnell — $0.003 per megapixel
+    #   flux-pro/*   — flat $0.05 per image
+    # fal's page advertises "billed by rounding up to the nearest megapixel",
+    # but observed billing contradicts a strict ceil: dark-history-channel ep1
+    # recorded 105 frames @ 1344x768 (~1.03 MP) totalling $2.70 (~$0.026 each),
+    # i.e. exact-MP pricing. A strict ceil would also quote 1024x1024 (~1.05 MP)
+    # at $0.05 — identical to pro — and poison selector cost scoring. We bill
+    # exact megapixels at the per-MP rate, rounded UP to the nearest tenth of a
+    # cent so estimates stay mildly conservative.
+    _FAL_PRICE_PER_MP = {
+        "dev": 0.025,
+        "schnell": 0.003,
+    }
+
     def estimate_cost(self, inputs: dict[str, Any]) -> float:
         model = inputs.get("model", "flux-pro/v1.1")
         if "pro" in model:
             return 0.05
-        return 0.03  # dev tier
+
+        width = int(inputs.get("width") or 1024)
+        height = int(inputs.get("height") or 1024)
+        megapixels = (width * height) / 1_000_000
+        rate = self._FAL_PRICE_PER_MP["dev"] if "dev" in model else self._FAL_PRICE_PER_MP["schnell"]
+        # Round up to the nearest $0.001 — never under-quote.
+        return math.ceil(megapixels * rate * 1000) / 1000
 
     def execute(self, inputs: dict[str, Any]) -> ToolResult:
         api_key = self._get_api_key()

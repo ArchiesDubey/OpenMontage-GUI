@@ -1766,10 +1766,6 @@ class VideoCompose(BaseTool):
     _REMOTION_PUBLIC_SUBDIR = "om-assets"
 
     @staticmethod
-    def _composer_dir() -> Path:
-        return Path(__file__).resolve().parent.parent.parent / "remotion-composer"
-
-    @staticmethod
     def _resolve_asset_path(raw: str, asset_manifest: dict[str, Any] | None) -> Path | None:
         """Best-effort resolution of a manifest path to a real file.
 
@@ -1793,14 +1789,20 @@ class VideoCompose(BaseTool):
 
     @classmethod
     def _stage_one_for_remotion(
-        cls, raw: str, asset_manifest: dict[str, Any] | None
+        cls, raw: str, asset_manifest: dict[str, Any] | None, dest_root: Path
     ) -> str | None:
-        """Copy one asset under remotion-composer/public/ and return its
-        staticFile()-relative path.
+        """Copy one asset under ``dest_root`` and return its staticFile()-relative path.
+
+        ``dest_root`` is the render-scoped ``--public-dir`` (see ``_remotion_render``),
+        never the permanent ``remotion-composer/public/`` — staging into the shared
+        tree would never get cleaned up and defeats the per-render isolation that
+        directory exists for (two renders staging different content for an
+        identically-named source would otherwise share one cache entry).
 
         Remotion's components resolve sources through staticFile(), and Chrome
         refuses to load file:// URLs inside the renderer, so an asset that lives
-        outside public/ cannot be loaded at all — it 404s mid-render.
+        outside the render's public dir cannot be loaded at all — it 404s
+        mid-render.
         """
         import hashlib
         import shutil
@@ -1814,7 +1816,7 @@ class VideoCompose(BaseTool):
         # cannot collide in the flat public tree.
         digest = hashlib.sha1(str(src.parent).encode("utf-8")).hexdigest()[:8]
         rel = f"{cls._REMOTION_PUBLIC_SUBDIR}/{digest}/{src.name}"
-        dest = cls._composer_dir() / "public" / rel
+        dest = dest_root / rel
 
         try:
             if (not dest.exists()
@@ -1828,9 +1830,12 @@ class VideoCompose(BaseTool):
 
     @classmethod
     def _stage_assets_for_remotion(
-        cls, cuts: list[dict[str, Any]], asset_manifest: dict[str, Any] | None
+        cls,
+        cuts: list[dict[str, Any]],
+        asset_manifest: dict[str, Any] | None,
+        dest_root: Path,
     ) -> tuple[list[dict[str, Any]], list[str], list[str]]:
-        """Stage every cut source into public/ and rewrite it to a relative path.
+        """Stage every cut source into ``dest_root`` and rewrite it to a relative path.
 
         Returns ``(cuts, staged_descriptions, unresolved_sources)``. Unresolved
         sources are returned rather than passed through untouched: a cut whose
@@ -1847,7 +1852,7 @@ class VideoCompose(BaseTool):
             # Remote and inline sources load over the network as-is; scene-type
             # cuts (text_card, stat_card, …) legitimately carry no source.
             if src and not src.startswith(("http://", "https://", "data:")):
-                rel = cls._stage_one_for_remotion(src, asset_manifest)
+                rel = cls._stage_one_for_remotion(src, asset_manifest, dest_root)
                 if rel:
                     new_cut["source"] = rel
                     descriptions.append(f"{cut.get('id', '?')}: {src} -> public/{rel}")
@@ -1934,7 +1939,10 @@ class VideoCompose(BaseTool):
 
     @classmethod
     def _adapt_audio_for_remotion(
-        cls, edit_decisions: dict[str, Any], asset_manifest: dict[str, Any] | None
+        cls,
+        edit_decisions: dict[str, Any],
+        asset_manifest: dict[str, Any] | None,
+        dest_root: Path,
     ) -> tuple[dict[str, Any] | None, list[str]]:
         """Convert the schema's audio block into the component's AudioConfig.
 
@@ -1956,7 +1964,7 @@ class VideoCompose(BaseTool):
                 return None
             entry = lookup.get(asset_id)
             raw = entry.get("path") if entry else asset_id
-            return cls._stage_one_for_remotion(raw, asset_manifest)
+            return cls._stage_one_for_remotion(raw, asset_manifest, dest_root)
 
         audio_in = edit_decisions.get("audio") or {}
         out: dict[str, Any] = {}
@@ -1974,7 +1982,7 @@ class VideoCompose(BaseTool):
                 )
                 src = stage(master) or (stage(segments[0].get("asset_id")) if segments else None)
             else:
-                src = cls._stage_one_for_remotion(src, asset_manifest) or src
+                src = cls._stage_one_for_remotion(src, asset_manifest, dest_root) or src
             if src:
                 out["narration"] = {"src": src, "volume": narration.get("volume", 1.0)}
             elif narration:
@@ -1987,7 +1995,7 @@ class VideoCompose(BaseTool):
         music_in = audio_in.get("music") or edit_decisions.get("music") or {}
         if isinstance(music_in, dict) and (music_in.get("asset_id") or music_in.get("src")):
             src = music_in.get("src")
-            src = (cls._stage_one_for_remotion(src, asset_manifest) if src
+            src = (cls._stage_one_for_remotion(src, asset_manifest, dest_root) if src
                    else stage(music_in.get("asset_id")))
             if src:
                 out["music"] = {
@@ -2225,6 +2233,31 @@ class VideoCompose(BaseTool):
         # Absolutise so the CLI can resolve the output regardless of cwd.
         output_path = output_path.resolve()
 
+        # The render-scoped public dir is allocated up front (not just before
+        # the render command is built) because the adaptation layer below must
+        # stage cut/audio assets directly into it. Staging into the permanent
+        # remotion-composer/public/ tree instead would never get cleaned up and
+        # would defeat the per-render isolation this directory exists for.
+        requested_public_dir = inputs.get("public_dir")
+        cleanup_public_dir = False
+        public_dir: Path
+        if requested_public_dir:
+            public_dir = Path(requested_public_dir).resolve()
+            if not public_dir.is_dir():
+                return ToolResult(
+                    success=False,
+                    error=f"Remotion public_dir does not exist or is not a directory: {public_dir}",
+                )
+        else:
+            # Unique per render. A name derived only from the output stem is
+            # shared by every render of that output: concurrent renders
+            # overwrite each other's staged media and the first to finish
+            # deletes the other's inputs, and cleanup would also erase a
+            # pre-existing directory that happened to match. The random suffix
+            # means the dir we delete is always one this invocation created.
+            public_dir = output_path.parent / f".remotion-public-{output_path.stem}-{secrets.token_hex(4)}"
+            cleanup_public_dir = True
+
         # Deep-copy props so we don't mutate the original
         props = json.loads(json.dumps(composition_data))
 
@@ -2236,7 +2269,7 @@ class VideoCompose(BaseTool):
         adaptation: dict[str, Any] = {}
 
         props["cuts"], staging_warnings, unresolved = self._stage_assets_for_remotion(
-            props.get("cuts", []), asset_manifest
+            props.get("cuts", []), asset_manifest, public_dir
         )
         # A source we cannot stage cannot be loaded by the renderer at all. Fail
         # here rather than 404-ing mid-render into a video of blank scenes — this
@@ -2266,7 +2299,7 @@ class VideoCompose(BaseTool):
             adaptation["cut_timing"] = timing_note
 
         adapted_audio, audio_warnings = self._adapt_audio_for_remotion(
-            composition_data, asset_manifest
+            composition_data, asset_manifest, public_dir
         )
         if adapted_audio:
             props["audio"] = adapted_audio
@@ -2310,26 +2343,6 @@ class VideoCompose(BaseTool):
                     error="CinematicRenderer received cuts but none could be adapted into scenes.",
                 )
 
-        requested_public_dir = inputs.get("public_dir")
-        cleanup_public_dir = False
-        public_dir: Path | None = None
-        if requested_public_dir:
-            public_dir = Path(requested_public_dir).resolve()
-            if not public_dir.is_dir():
-                return ToolResult(
-                    success=False,
-                    error=f"Remotion public_dir does not exist or is not a directory: {public_dir}",
-                )
-        else:
-            # Unique per render. A name derived only from the output stem is
-            # shared by every render of that output: concurrent renders
-            # overwrite each other's staged media and the first to finish
-            # deletes the other's inputs, and cleanup would also erase a
-            # pre-existing directory that happened to match. The random suffix
-            # means the dir we delete is always one this invocation created.
-            public_dir = output_path.parent / f".remotion-public-{output_path.stem}-{secrets.token_hex(4)}"
-            cleanup_public_dir = True
-
         # Everything from staging onward is guarded, so a failure during props
         # writing or command setup — not just during the render — still removes
         # the staged user media instead of leaving it on disk.
@@ -2337,9 +2350,18 @@ class VideoCompose(BaseTool):
         staged_count = 0
         profile_name = inputs.get("profile")
         try:
-            staged_count = self._stage_remotion_media(props, public_dir)
+            # Combine every staging source: cuts (already copied into
+            # public_dir above), audio tracks (ditto), and anything else in
+            # props with a source/src/backgroundSrc key that _stage_remotion_media
+            # finds still pointing at a local file.
+            staged_count = (
+                len(staging_warnings)
+                + (len(adapted_audio) if adapted_audio else 0)
+                + self._stage_remotion_media(props, public_dir)
+            )
+            effective_public_dir: Path | None = public_dir
             if not staged_count and cleanup_public_dir:
-                public_dir = None
+                effective_public_dir = None
             elif cleanup_public_dir:
                 # We are about to override Remotion's public dir with our own, so
                 # mirror the real one in — otherwise assets already staged into
@@ -2364,8 +2386,8 @@ class VideoCompose(BaseTool):
                 # API Remotion recommends for file paths and is cross-platform safe.
                 f"--props={props_path}",
             ]
-            if public_dir is not None:
-                cmd.append(f"--public-dir={public_dir}")
+            if effective_public_dir is not None:
+                cmd.append(f"--public-dir={effective_public_dir}")
 
             # Apply media profile dimensions
             if profile_name:

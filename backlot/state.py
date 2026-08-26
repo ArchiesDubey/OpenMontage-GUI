@@ -515,6 +515,21 @@ def _scan_media(project_dir: Path) -> dict[str, list[dict]]:
     for f in sorted(project_dir.glob("*.mp4")):
         renders.append({"path": _rel(project_dir, f), "size": f.stat().st_size,
                         "mtime": f.stat().st_mtime, "at_root": True})
+    # Deliverable heuristic: a video NAMED after the project is a final cut
+    # wherever bespoke scripts left it (e.g. assets/e02/<id>_episode.mp4).
+    # Segment/clip files never qualify — only the project-id-named artifact.
+    pid = project_dir.name.lower()
+    seen = {r["path"] for r in renders}
+    for f in sorted(project_dir.rglob("*.mp4")):
+        try:
+            rel = _rel(project_dir, f)
+        except Exception:
+            continue
+        if rel in seen:
+            continue
+        if pid and pid in f.name.lower() and not f.name.lower().startswith("seg_"):
+            renders.append({"path": rel, "size": f.stat().st_size,
+                            "mtime": f.stat().st_mtime, "found": True})
     for f in sorted(project_dir.glob("*.mp3")):
         music.append({"path": _rel(project_dir, f), "at_root": True})
     music_dir = project_dir / "assets" / "music"

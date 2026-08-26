@@ -18,6 +18,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from backlot import agents, control
 from backlot.state import PROJECTS_DIR, REPO_ROOT, list_projects, load_board_state, summarize_project
 
 UI_DIR = Path(__file__).resolve().parent / "ui"
@@ -178,7 +179,187 @@ def create_app() -> FastAPI:
     @app.get("/api/project/{project_id}/state")
     async def project_state(project_id: str) -> dict:
         project_dir = _safe_project_dir(project_id)
-        return await asyncio.to_thread(load_board_state, project_dir)
+        # Cockpit merge: recorded human decisions + whether any are still
+        # unapplied (the agent echoes applied decisions into the checkpoint,
+        # so "pending" is derivable from disk — no server-side bookkeeping).
+        # State and decisions are independent reads; decisions is loaded once
+        # and reused for pending_decisions instead of re-scanning the dir.
+        state, decisions = await asyncio.gather(
+            asyncio.to_thread(load_board_state, project_dir),
+            asyncio.to_thread(control.read_decisions, project_dir),
+        )
+        pending = await asyncio.to_thread(control.pending_decisions, project_dir, decisions)
+        state["human_decisions"] = list(decisions.values())
+        state["pending_decisions"] = [p["stage"] for p in pending]
+        return state
+
+    # ---- Cockpit: human gate decisions -----------------------------------
+
+    @app.post("/api/project/{project_id}/decide")
+    async def decide(project_id: str, request: Request) -> dict:
+        project_dir = _safe_project_dir(project_id)
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="invalid JSON body")
+        stage = body.get("stage")
+        decision = body.get("decision")
+        if not stage or not decision:
+            raise HTTPException(status_code=400, detail="stage and decision are required")
+        try:
+            record = control.write_decision(
+                project_dir, str(stage), str(decision),
+                feedback=str(body.get("feedback") or ""),
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        hub.publish(project_id)
+        return record
+
+    @app.get("/api/project/{project_id}/decisions")
+    async def decisions(project_id: str) -> dict:
+        project_dir = _safe_project_dir(project_id)
+        recorded = await asyncio.to_thread(control.read_decisions, project_dir)
+        pending = await asyncio.to_thread(control.pending_decisions, project_dir, recorded)
+        return {
+            "decisions": list(recorded.values()),
+            "pending": [p["stage"] for p in pending],
+        }
+
+    # ---- Cockpit: agent runs ----------------------------------------------
+
+    @app.get("/api/runs")
+    async def all_runs() -> list:
+        return control.runs.all()
+
+    @app.get("/api/project/{project_id}/runs")
+    async def project_runs(project_id: str) -> dict:
+        _safe_project_dir(project_id)
+        latest = control.runs.latest_for_project(project_id)
+        return {
+            "runs": [r.summary() for r in [latest] if latest],
+            "latest": latest.summary() if latest else None,
+        }
+
+    @app.get("/api/agents")
+    async def list_agents() -> dict:
+        return {"agents": agents.catalog()}
+
+    @app.get("/api/pipelines")
+    async def list_pipelines() -> dict:
+        rows = []
+        import yaml
+
+        defs_dir = REPO_ROOT / "pipeline_defs"
+        if defs_dir.is_dir():
+            for f in sorted(defs_dir.glob("*.yaml")):
+                try:
+                    data = yaml.safe_load(f.read_text(encoding="utf-8")) or {}
+                except Exception:
+                    continue
+                stages = data.get("stages") or []
+                rows.append({
+                    "id": f.stem,
+                    "label": str(data.get("name") or f.stem),
+                    "description": str(data.get("description") or "").strip(),
+                    "stages": len(stages) if isinstance(stages, list) else 0,
+                })
+        return {"pipelines": rows}
+
+    @app.post("/api/projects")
+    async def create_project(request: Request) -> dict:
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="invalid JSON body")
+        title = str(body.get("title") or "")
+        pipeline_type = str(body.get("pipeline_type") or "")
+        brief = str(body.get("brief") or "")
+        project_id = str(body.get("project_id") or "") or None
+        try:
+            record = await asyncio.to_thread(
+                control.create_project, title, pipeline_type, brief, project_id,
+            )
+        except ValueError as exc:
+            status = 409 if "already exists" in str(exc) else 400
+            raise HTTPException(status_code=status, detail=str(exc))
+        launched = None
+        if body.get("launch", True):
+            try:
+                launched = control.runs.start(
+                    record["project_id"],
+                    control.kickoff_instruction(brief),
+                    str(body.get("agent") or "auto"),
+                ).summary()
+            except (RuntimeError, ValueError) as exc:
+                launched = {"error": str(exc)}
+        return {"project": record, "run": launched}
+
+    @app.post("/api/runs")
+    async def start_run(request: Request) -> dict:
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(status_code=400, detail="invalid JSON body")
+        project_id = str(body.get("project_id") or "")
+        _safe_project_dir(project_id)
+        try:
+            run = control.runs.start(
+                project_id,
+                str(body.get("instruction") or ""),
+                str(body.get("agent") or "auto"),
+            )
+        except RuntimeError as exc:
+            status = 400 if "unavailable" in str(exc) else 409
+            raise HTTPException(status_code=status, detail=str(exc))
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        return run.summary()
+
+    @app.post("/api/runs/{run_id}/stop")
+    async def stop_run(run_id: str) -> dict:
+        run = control.runs.get(run_id)
+        if run is None:
+            raise HTTPException(status_code=404, detail=f"unknown run: {run_id}")
+        stopped = run.stop()
+        if stopped:
+            run.status = "stopped"
+        return run.summary()
+
+    @app.get("/api/runs/{run_id}/events")
+    async def run_events(run_id: str, request: Request) -> StreamingResponse:
+        run = control.runs.get(run_id)
+        if run is None:
+            raise HTTPException(status_code=404, detail=f"unknown run: {run_id}")
+
+        async def stream():
+            seq = 0
+            yield _sse({"type": "hello", "run_id": run_id})
+            idle = 0
+            while True:
+                if await request.is_disconnected():
+                    return
+                lines = await asyncio.to_thread(run.lines_since, seq)
+                for line in lines:
+                    seq = line["seq"]
+                    yield _sse({"type": "line", **line})
+                if lines:
+                    idle = 0
+                    continue
+                # Terminal line seen and process done → close the stream.
+                summary = run.summary()
+                if summary["status"] != "running" and seq >= summary["last_seq"]:
+                    yield _sse({"type": "done", **summary})
+                    return
+                idle += 1
+                if idle > 600:  # ~10 min of silence on a dead stream
+                    return
+                await asyncio.sleep(1)
+
+        return StreamingResponse(stream(), media_type="text/event-stream", headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",
+        })
 
     @app.get("/api/project/{project_id}/events")
     async def project_events(project_id: str, request: Request) -> StreamingResponse:

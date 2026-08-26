@@ -2,7 +2,7 @@
 
 import {
   STAGE_ICONS, el, fmtAgo, fmtClock, fmtDuration, fmtMoney,
-  getJSON, mediaURL, subscribe, thumbURL, waveBars,
+  getJSON, mediaURL, postJSON, subscribe, thumbURL, waveBars,
 } from "/ui/lib.js";
 
 const rawProjectPath = location.pathname.split("/p/")[1] || "";
@@ -487,6 +487,7 @@ function renderApprovalReview(s) {
   const nextStage = stageIndex >= 0 ? s.stages[stageIndex + 1] : null;
   const review = awaiting.review || {};
   const reviewSummary = reviewSummaryText(review);
+  const decidedAlready = (s.pending_decisions || []).includes(awaiting.name);
 
   const artifacts = entries.map(([name, artifact]) => el("article", {
     class: "approval-artifact",
@@ -511,20 +512,282 @@ function renderApprovalReview(s) {
       el("div", {},
         el("div", { class: "approval-eyebrow" }, "REVIEW GATE"),
         el("h2", {}, `${humanize(awaiting.name)} is ready for your review`),
-        el("p", {}, "Review the artifact here, then reply in chat to approve it or request changes."),
+        el("p", {}, decidedAlready
+          ? "Your decision is recorded — run the agent to apply it."
+          : "Review here and decide below — your call is recorded to the project and applied by the agent."),
       ),
       el("span", { class: "approval-status" }, "PENDING APPROVAL"),
     ),
     reviewSummary ? el("div", { class: "approval-review-note" },
       el("b", {}, "SELF-REVIEW  "), shortText(reviewSummary, 260)) : null,
     el("div", { class: "approval-artifacts" }, artifacts),
-    el("div", { class: "approval-review-foot" },
-      el("span", {}, nextStage
-        ? `Approval unlocks ${humanize(nextStage.name)}.`
-        : "This is the final approval gate."),
-      el("button", { type: "button", onclick: () => toggleDrawer(awaiting.name) }, "OPEN FULL ARTIFACT"),
-    ),
+    renderGateControls(awaiting, decidedAlready, Boolean(nextStage)),
   );
+}
+
+// ---------------------------------------------------------------------------
+// cockpit: gate decisions + agent runs
+// ---------------------------------------------------------------------------
+
+let decideBusy = false;
+
+async function sendDecision(stageName, decision, feedbackEl) {
+  if (decideBusy) return;
+  decideBusy = true;
+  try {
+    await postJSON(`/api/project/${encodedProjectId}/decide`, {
+      stage: stageName, decision,
+      feedback: feedbackEl && feedbackEl.value ? feedbackEl.value : "",
+    });
+    await refresh();
+  } catch (err) {
+    alert(`Decision failed: ${err.message}`);
+  } finally {
+    decideBusy = false;
+  }
+}
+
+function renderGateControls(stage, decidedAlready, hasNext) {
+  const foot = el("div", { class: "approval-review-foot gate-foot" });
+  const drawerBtn = el("button", {
+    type: "button", onclick: () => toggleDrawer(stage.name),
+  }, "OPEN FULL ARTIFACT");
+  if (decidedAlready) {
+    foot.append(
+      el("span", { class: "gate-recorded" },
+        "✓ DECISION RECORDED — an agent run applies it"),
+      el("button", { type: "button", onclick: startAgentRun }, "RUN AGENT NOW"),
+      drawerBtn,
+    );
+    return foot;
+  }
+  const ta = el("textarea", {
+    class: "gate-feedback", rows: "2",
+    placeholder: "Optional guidance — what to change, what to keep…",
+  });
+  const requestChanges = async () => {
+    if (!ta.value.trim()) {
+      ta.focus();
+      ta.placeholder = "Describe the changes you want — the agent revises from your feedback.";
+      return;
+    }
+    sendDecision(stage.name, "changes_requested", ta);
+  };
+  foot.append(
+    ta,
+    el("div", { class: "gate-actions" },
+      el("button", { class: "gate-approve", type: "button",
+        onclick: () => sendDecision(stage.name, "approved", ta) }, "APPROVE & CONTINUE"),
+      el("button", { class: "gate-changes", type: "button",
+        onclick: requestChanges }, "REQUEST CHANGES"),
+    ),
+    el("div", { class: "gate-meta" },
+      hasNext ? "Approval unlocks the next stage." : "This is the final approval gate.",
+      " · recorded to ", el("code", {}, `decisions/${stage.name}.json`)),
+    drawerBtn,
+  );
+  return foot;
+}
+
+let runState = null;         // latest run summary for this project
+const runLog = [];           // streamed console lines [{seq, kind, text}]
+let runSource = null;
+let agentCatalog = null;     // full capability menu from /api/agents
+const AGENT_KEY = "backlot.agent";
+
+function selectedAgent() {
+  return localStorage.getItem(AGENT_KEY) || "auto";
+}
+
+async function loadAgents() {
+  try {
+    const data = await getJSON("/api/agents");
+    const changed = JSON.stringify(data.agents) !== JSON.stringify(agentCatalog);
+    agentCatalog = data.agents;
+    if (changed && state) render();
+  } catch { /* server briefly down */ }
+}
+
+async function pollRun() {
+  try {
+    const data = await getJSON(`/api/project/${encodedProjectId}/runs`);
+    const latest = data.latest || null;
+    const changed = JSON.stringify(latest) !== JSON.stringify(runState);
+    runState = latest;
+    if (latest && latest.status === "running") openRunStream(latest.run_id);
+    else if (runSource) { runSource.close(); runSource = null; }
+    if (changed && state) render();
+  } catch { /* server briefly down — next tick retries */ }
+}
+
+function openRunStream(runId) {
+  if (runSource && runSource._runId === runId) return;
+  if (runSource) runSource.close();
+  runLog.length = 0;
+  runSource = new EventSource(`/api/runs/${runId}/events`);
+  runSource._runId = runId;
+  runSource.onmessage = (msg) => {
+    let data;
+    try { data = JSON.parse(msg.data); } catch { return; }
+    if (data.type === "line") {
+      if (!runLog.some((l) => l.seq === data.seq)) {
+        runLog.push(data);
+        appendConsoleLine(data);
+      }
+      if (runLog.length > 300) runLog.splice(0, runLog.length - 300);
+    } else if (data.type === "done") {
+      pollRun();
+    }
+  };
+}
+
+async function startAgentRun() {
+  const instr = document.getElementById("agent-instruction");
+  try {
+    await postJSON("/api/runs", {
+      project_id: projectId,
+      instruction: instr && instr.value ? instr.value : "",
+      agent: selectedAgent(),
+    });
+    if (instr) instr.value = "";
+    await pollRun();
+  } catch (err) {
+    alert(`Could not start run: ${err.message}`);
+  }
+}
+
+async function stopAgentRun() {
+  if (!runState) return;
+  try {
+    await postJSON(`/api/runs/${runState.run_id}/stop`, {});
+    await pollRun();
+  } catch (err) {
+    alert(`Could not stop run: ${err.message}`);
+  }
+}
+
+function shortenJsonLine(text) {
+  // Headless agents emit newline-delimited JSON events (Claude Code and
+  // Gemini CLI both use stream-json). Surface only the interesting bits;
+  // unknown-but-text-bearing shapes degrade to their text field.
+  try {
+    const ev = JSON.parse(text);
+    const kind = ev.type || "event";
+    if (kind === "assistant" && ev.message && Array.isArray(ev.message.content)) {
+      const said = ev.message.content
+        .filter((c) => c.type === "text" && c.text).map((c) => c.text.trim());
+      if (said.length) return said.join(" ");
+      const tools = ev.message.content
+        .filter((c) => c.type === "tool_use").map((c) => `→ ${c.name}()`);
+      return tools.join(" · ");
+    }
+    if (kind === "result") {
+      return ev.result ? String(ev.result).slice(0, 400) : "run finished";
+    }
+    // Generic fallbacks across agent dialects:
+    if (typeof ev.text === "string" && ev.text.trim()) {
+      return ev.text.trim().slice(0, 400);
+    }
+    const call = ev.function_call || ev.tool_call || ev.tool_use
+      || (ev.message && ev.message.content && Array.isArray(ev.message.content)
+        ? ev.message.content.find((c) => c.name || c.tool_use) : null);
+    if (call) return `→ ${call.name || call.id || "tool"}()`;
+    if (kind === "init" || kind === "system" || kind === "user"
+      || kind === "usage" || kind === "stats") return "";
+    return "";
+  } catch {
+    return text.slice(0, 240);
+  }
+}
+
+function consoleLineEl(line) {
+  return el("div", { class: `console-line k-${line.kind}` }, line.text);
+}
+
+function appendConsoleLine(line) {
+  const body = document.querySelector(".agent-console");
+  if (!body) return;
+  if (!appendConsoleLineTo(body, line)) return;
+  while (body.children.length > 120) body.firstChild.remove();
+  body.scrollTop = body.scrollHeight;
+}
+
+function renderAgentPanel() {
+  const running = runState && runState.status === "running";
+  const body = el("div", { class: "panel-body agent-body" });
+
+  // Agent picker: the full capability picture — ready ones selectable,
+  // missing ones visible with the reason they're greyed out.
+  const pick = el("select", {
+    class: "agent-pick", title: "Which CLI drives this production",
+    disabled: running ? "disabled" : null,
+    onchange: (e) => { localStorage.setItem(AGENT_KEY, e.target.value); },
+  });
+  if (!agentCatalog) {
+    pick.append(el("option", {}, "loading agents…"));
+  } else {
+    const ready = agentCatalog.filter((a) => a.available);
+    pick.append(el("option", {
+      value: "auto",
+      selected: selectedAgent() === "auto" ? "selected" : null,
+    }, `AUTO${ready.length ? ` · ${ready[0].label}` : ""}`));
+    for (const a of agentCatalog) {
+      const label = a.available
+        ? `${a.label}${a.hint ? ` — ${a.hint}` : ""}`
+        : `${a.label} — ${a.reason}`;
+      pick.append(el("option", {
+        value: a.id,
+        selected: selectedAgent() === a.id ? "selected" : null,
+        disabled: a.available ? null : "disabled",
+        title: a.reason || a.hint || a.label,
+      }, label));
+    }
+  }
+  body.append(pick);
+
+  const instr = el("textarea", {
+    id: "agent-instruction", rows: "2",
+    placeholder: running ? "Run in progress…"
+      : "Optional direction for the next run — steer tone, style, scope…",
+  });
+  if (running) instr.disabled = true;
+  body.append(instr);
+
+  body.append(el("div", { class: "agent-actions" },
+    running
+      ? el("button", { class: "gate-changes", type: "button", onclick: stopAgentRun }, "■ STOP RUN")
+      : el("button", { class: "gate-approve", type: "button", onclick: startAgentRun }, "▶ RUN AGENT"),
+    el("span", { class: "gate-meta" },
+      running
+        ? `${runState.agent_label || runState.agent || "agent"} — live output below`
+        : runState ? `last run ${fmtAgo(runState.started_at)} · ${runState.status}`
+        : "drives the next pipeline stage from AGENT_GUIDE.md"),
+  ));
+
+  const consoleEl = el("div", { class: "agent-console" });
+  if (runLog.length) {
+    for (const line of runLog) appendConsoleLineTo(consoleEl, line);
+  } else {
+    consoleEl.append(el("div", { class: "console-line k-system" },
+      running ? "waiting for agent output…" : "no runs yet this session"));
+  }
+  body.append(consoleEl);
+
+  return el("div", { class: "panel agent-panel" },
+    el("div", { class: "panel-head" },
+      el("h2", {}, "Agent"),
+      el("span", { class: `meta${running ? " live" : ""}` },
+        running ? "● RUNNING" : runState ? runState.status.toUpperCase() : "IDLE")),
+    body);
+}
+
+function appendConsoleLineTo(body, line) {
+  let text = line.kind === "json" || line.kind === "out"
+    ? shortenJsonLine(line.text) : line.text;
+  if (!text) return false;
+  if (text.length > 500) text = `${text.slice(0, 500)}…`;
+  body.append(consoleLineEl({ ...line, text }));
+  return true;
 }
 
 function openScriptModal() {
@@ -1074,10 +1337,13 @@ function render() {
   if (approvalReview) main.append(approvalReview);
   const script = renderScriptCard(s);
   if (script) main.append(script);
-  const aside = el("aside", {});
+  // The agent panel always renders (it's the run-control surface, useful
+  // regardless of what else the project has produced), so the aside is
+  // never empty and the board always has two columns.
+  const aside = el("aside", {}, renderAgentPanel());
   const decisions = renderDecisions(s);
-  const activity = renderActivity(s);
   if (decisions) aside.append(decisions);
+  const activity = renderActivity(s);
   if (activity) aside.append(activity);
 
   // Media sections live INSIDE the main column so a tall decisions rail
@@ -1085,18 +1351,10 @@ function render() {
   const storyboard = renderStoryboard(s);
   const found = renderFoundMedia(s);
   const renders = renderRenders(s);
-
-  if (approvalReview || script || decisions || activity) {
-    for (const section of [storyboard, found, renders]) {
-      if (section) main.append(section);
-    }
-    const hasAside = Boolean(decisions || activity);
-    app.append(el("div", { class: `board${hasAside ? "" : " solo"}` }, main, hasAside ? aside : null));
-  } else {
-    for (const section of [storyboard, found, renders]) {
-      if (section) app.append(section);
-    }
+  for (const section of [storyboard, found, renders]) {
+    if (section) main.append(section);
   }
+  app.append(el("div", { class: "board" }, main, aside));
 }
 
 // Defensive normalization (F-02): the server contract guarantees these
@@ -1108,6 +1366,8 @@ function normalize(s) {
     stage.produces = Array.isArray(stage.produces) ? stage.produces : [];
   }
   s.artifacts = s.artifacts || {};
+  s.human_decisions = Array.isArray(s.human_decisions) ? s.human_decisions : [];
+  s.pending_decisions = Array.isArray(s.pending_decisions) ? s.pending_decisions : [];
   s.media = s.media || {};
   s.media.renders = Array.isArray(s.media.renders) ? s.media.renders : [];
   s.media.snapshots = Array.isArray(s.media.snapshots) ? s.media.snapshots : [];
@@ -1140,3 +1400,9 @@ refresh().catch((err) => {
 if (!new URLSearchParams(location.search).has("static")) {
   subscribe(`/api/project/${encodeURIComponent(projectId)}/events`, () => refresh().catch(console.error));
 }
+
+// Cockpit: keep run status fresh (cheap local endpoint, 4s cadence).
+pollRun();
+setInterval(pollRun, 4000);
+loadAgents();
+setInterval(loadAgents, 30000);

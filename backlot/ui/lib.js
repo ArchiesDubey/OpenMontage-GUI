@@ -6,6 +6,20 @@ export async function getJSON(url) {
   return res.json();
 }
 
+export async function postJSON(url, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json()).detail || ""; } catch { /* ignore */ }
+    throw new Error(`${res.status} ${url}${detail ? ` — ${detail}` : ""}`);
+  }
+  return res.json();
+}
+
 export function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {

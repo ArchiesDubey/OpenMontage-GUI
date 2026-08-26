@@ -24,6 +24,17 @@ from tools.base_tool import (
 )
 
 
+def _to_rgb(color: Any) -> dict[str, int]:
+    """Normalize a palette entry to fal's {"r","g","b"} object form.
+
+    Accepts "#RRGGBB" / "RRGGBB" strings or an already-formed rgb dict.
+    """
+    if isinstance(color, dict):
+        return color
+    h = str(color).lstrip("#")
+    return {"r": int(h[0:2], 16), "g": int(h[2:4], 16), "b": int(h[4:6], 16)}
+
+
 class RecraftImage(BaseTool):
     name = "recraft_image"
     version = "0.1.0"
@@ -144,19 +155,18 @@ class RecraftImage(BaseTool):
         if inputs.get("image_size"):
             payload["image_size"] = inputs["image_size"]
         if inputs.get("style"):
-            # NOTE: As of 2026-04, fal.ai's Recraft V4 endpoint rejects the
-            # `style` parameter with a 422 Unprocessable Entity error. The
-            # style enum values (digital_illustration, realistic_image, etc.)
-            # are NOT accepted by the /fal-ai/recraft/v4/text-to-image route.
-            # Workaround: encode the style direction in the prompt text instead
-            # (e.g. "digital illustration of..." rather than style="digital_illustration").
-            # We still pass the parameter through in case fal.ai re-enables it,
-            # but callers should be aware this may fail.
+            # Verified 2026-08-11 against /fal-ai/recraft/v4/text-to-image: the
+            # style enum IS accepted and returns 200. (An earlier note here
+            # claimed it 422s — that was a misdiagnosis of the `colors` error
+            # below, which fails the whole request regardless of `style`.)
+            # style="vector_illustration" returns image/svg+xml, not PNG.
             payload["style"] = inputs["style"]
-        if inputs.get("colors"):
-            payload["colors"] = inputs["colors"]
-
         try:
+            if inputs.get("colors"):
+                # fal expects [{"r":int,"g":int,"b":int}]; passing hex strings
+                # returns 422 model_attributes_type. Accept either from callers.
+                payload["colors"] = [_to_rgb(c) for c in inputs["colors"]]
+
             response = requests.post(
                 f"https://fal.run/fal-ai/{model_path}",
                 headers={

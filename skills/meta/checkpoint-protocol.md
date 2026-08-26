@@ -166,6 +166,34 @@ When `human_approval_default: true`:
    stage — it runs only after the assets gate is approved. Rendering a full
    draft inside the assets stage jumps the gate the user is meant to hold.
 
+### Step 5b: UI-Recorded Decisions (Backlot Cockpit)
+
+Humans can approve gates, request changes, or abort from the Backlot board
+instead of replying in chat. Each decision lands as
+`projects/<id>/decisions/<stage>.json` (`decision`: `approved` |
+`changes_requested` | `abort`, plus `feedback`, `source: "backlot-ui"`).
+
+**At the start of every pipeline turn (and before any stage work), check for
+unapplied decisions** — a decision is unapplied until its checkpoint reflects
+it:
+
+1. Read `projects/<id>/decisions/*.json`.
+2. For each stage whose checkpoint has NOT echoed the decision in
+   `metadata.human_decisions` (match on `decided_at_epoch`):
+   - `approved` → re-write the checkpoint with `status="completed"`,
+     `human_approved=True`, and append
+     `{"decision": ..., "feedback": ..., "decided_at_epoch": ...}` to
+     `metadata.human_decisions`. Then proceed to the next stage.
+   - `changes_requested` → treat its `feedback` as the human's revision
+     request: return to the stage director skill, revise, re-review,
+     re-checkpoint (`awaiting_human` again), and echo the decision.
+   - `abort` → stop the pipeline and report; do not advance anything.
+3. Never apply a decision whose feedback you have not read. The feedback is
+   binding creative direction, not a suggestion.
+
+If a run was launched from the board (headless session), the same rules
+apply — the UI decision replaces the chat reply it stands in for.
+
 ### Step 6: Determine Next Stage
 
 After checkpoint is written and approved (if needed):

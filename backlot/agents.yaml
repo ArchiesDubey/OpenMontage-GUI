@@ -1,0 +1,24 @@
+# Backlot agent registry — extra CLI agents that can drive productions.
+#
+# Built-ins (always present): claude, gemini.
+# Add any other headless CLI here — e.g. an OpenRouter-backed agent.
+# The command template MUST contain "{prompt}" (the full pipeline prompt,
+# including decisions/ handling instructions, is substituted in).
+#
+# Availability = binary on PATH (+ optional requires_env set). Unavailable
+# entries still show in the board's agent menu, greyed out with the reason.
+#
+# Examples:
+#
+# agents:
+#   openrouter-aider:
+#     label: Aider · OpenRouter
+#     hint: openrouter/anthropic/claude-sonnet-4
+#     command: 'aider --yes-always --no-check-update --model openrouter/anthropic/claude-sonnet-4 --message "{prompt}"'
+#     requires_env: OPENROUTER_API_KEY
+#
+#   opencode:
+#     label: OpenCode · OpenRouter
+#     hint: any OpenRouter model via models.dev config
+#     command: 'opencode run "{prompt}"'
+#     requires_env: OPENROUTER_API_KEY

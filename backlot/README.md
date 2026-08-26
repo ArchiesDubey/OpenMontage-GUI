@@ -1,9 +1,30 @@
-# Backlot — the living storyboard
+# Backlot — the living storyboard + cockpit
 
-A read-only local board that shows a production happening: pipeline stages
-lighting up, the script as a screenplay page, the scene plan as a filmstrip
-that fills in as assets generate, decisions, spend, and activity — all
-derived from what the pipeline already writes to `projects/<id>/`.
+A local board that shows a production happening: pipeline stages lighting up,
+the script as a screenplay page, the scene plan as a filmstrip that fills in
+as assets generate, decisions, spend, and activity — all derived from what the
+pipeline already writes to `projects/<id>/`.
+
+**And it drives.** Since the cockpit update, the board is also the control
+surface:
+
+- **Gate decisions in the UI** — when a stage is `awaiting_human`, approve or
+  request changes (with guidance) right on the review gate. The decision is
+  recorded to `projects/<id>/decisions/<stage>.json`; the agent applies it on
+  its next turn/run (`skills/meta/checkpoint-protocol.md`, Step 5b).
+- **Agent runs from the board** — "▶ RUN AGENT" launches a headless agent
+  session that resumes the project's next pipeline stage; live output streams
+  into the console panel. Stop it any time.
+- **Any agent CLI, not just Claude** — the runner is pluggable. Built-in
+  adapters: **Claude Code** (`stream-json`, acceptEdits) and **Gemini CLI**
+  (`stream-json`, auto_edit). Anything else — e.g. an OpenRouter-backed CLI
+  like `aider --model openrouter/...` or `opencode` — plugs in via
+  `backlot/agents.yaml` with a `{prompt}` command template (see that file for
+  examples). The agent menu always shows the full picture: ready agents plus
+  greyed-out ones with the exact reason (missing binary / env key).
+
+The architecture contract still holds: the agent drives production; Backlot
+records what the human decided and never writes checkpoints itself.
 
 ```bash
 python -m backlot open <project-id>   # start server if needed + open browser
