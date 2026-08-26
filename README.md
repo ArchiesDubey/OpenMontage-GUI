@@ -7,15 +7,18 @@
 
 <p align="center"><sub><em>Monty the Clapper — the official mascot of OpenMontage</em></sub></p>
 
-<h1 align="center">OpenMontage</h1>
+<h1 align="center">OpenMontage GUI</h1>
 
-<p align="center"><strong>The first open-source, agentic video production system.</strong></p>
+<p align="center"><strong>The browser-based control panel for OpenMontage — the first open-source, agentic video production system.</strong></p>
+
+<p align="center"><sub>A GUI-enhanced fork of <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>, adding <a href="#launch-the-openmontage-gui">Backlot</a>: a live storyboard, one-click agent launcher, and approval cockpit on top of the same 12 pipelines, 100+ tools, and 700+ skill files.</sub></p>
 
 <p align="center">
   <a href="https://openmontage.video"><img src="https://img.shields.io/badge/Website-openmontage.video-d14a28?style=for-the-badge" alt="openmontage.video"></a>
 </p>
 
 <p align="center">
+  <a href="#launch-the-openmontage-gui">Launch the GUI</a> &nbsp;·&nbsp;
   <a href="#start-from-a-video-you-already-love">Paste A Video</a> &nbsp;·&nbsp;
   <a href="#quick-start">Quick Start</a> &nbsp;·&nbsp;
   <a href="#try-these-prompts">Try These Prompts</a> &nbsp;·&nbsp;
@@ -147,25 +150,13 @@ Works with **Claude Code, Cursor, Copilot, Windsurf, Codex** — any AI coding a
 
 ---
 
-## Watch It Happen — The Backlot Living Storyboard
+## Launch The OpenMontage GUI
+
+**The OpenMontage GUI is called Backlot** — a local, browser-based control panel for OpenMontage. It replaces "read the chat transcript to see what happened" with a live board you can watch, approve, and *drive* a production from, with or without a terminal open.
 
 Chat tells you what the agent *said*. **Backlot shows you what the production is actually doing** — a local board that fills itself in as the pipeline runs. Stages light up, the script lands as a screenplay page, scene cards shimmer while assets generate, and every provider decision and dollar spent is on the wall.
 
-When a production starts, the agent opens it for you automatically. No setup, no reporting — the board derives everything from the project files the pipeline already writes.
-
-<p align="center"><img src="docs/images/backlot/board-live.png" alt="Backlot live board — assets generating" width="920"></p>
-
-**The storyboard is now a real approval gate.** Asset generation pauses on a scene-by-scene contact sheet — takes, prompts, per-asset cost, quality scores — so you approve the visuals *before* the render, not after it's too late:
-
-<p align="center"><img src="docs/images/backlot/storyboard.png" alt="Backlot storyboard — filmstrip with takes and renders" width="920"></p>
-
-Creative gates hold until you answer. The board shows what's waiting and why; you reply in chat:
-
-<p align="center"><img src="docs/images/backlot/script-gate.png" alt="Backlot script gate — awaiting approval" width="920"></p>
-
-Every production on your machine, live-first, in the library:
-
-<p align="center"><img src="docs/images/backlot/library.png" alt="Backlot library" width="920"></p>
+### How to launch the OpenMontage GUI
 
 ```bash
 python -m backlot open                  # the library — every project on disk
@@ -173,7 +164,44 @@ python -m backlot open <project-id>     # one production's live board
 python scripts/backlot_simulate_run.py  # no production yet? watch a simulated one live
 ```
 
-And when a run is done, hit **▶ REPLAY RUN** — the whole production replays from its timestamps, scrubbable end to end. See [`backlot/README.md`](backlot/README.md) for how it works.
+That's the whole install: it ships with OpenMontage (`make setup` already pulled its dependencies), and `open` starts the local server and opens your browser in one command. When a production starts from your AI coding assistant, the agent opens the board for you automatically — no separate setup, no manual reporting.
+
+<p align="center"><img src="docs/images/backlot/board-live.png" alt="OpenMontage GUI live board (Backlot) — pipeline stages and assets generating in real time" width="920"></p>
+
+### How to operate a production from the GUI
+
+The board isn't just a viewer — it's a cockpit:
+
+- **Pick and launch an agent.** A dropdown lists every agent CLI available — Claude Code and Gemini CLI are built in, and anything else (Aider, OpenCode, an OpenRouter-backed CLI) plugs in via [`backlot/agents.yaml`](backlot/agents.yaml). Hit **▶ RUN AGENT** and the board launches a headless session that resumes the next pipeline stage, with live output streaming into the console.
+- **Stop a run** any time with **■ STOP RUN**.
+- **Approve or redirect gates in the browser.** Asset generation pauses on a scene-by-scene contact sheet — takes, prompts, per-asset cost, quality scores — so you approve the visuals *before* the render, not after it's too late. Every creative gate shows what's waiting and why, right on the card:
+
+<p align="center"><img src="docs/images/backlot/storyboard.png" alt="OpenMontage GUI asset approval gate (Backlot storyboard) — filmstrip of scene takes and renders" width="920"></p>
+
+<p align="center"><img src="docs/images/backlot/script-gate.png" alt="OpenMontage GUI script approval gate (Backlot) — awaiting human approval before the next stage" width="920"></p>
+
+- **See every production on your machine**, live-first, in one library:
+
+<p align="center"><img src="docs/images/backlot/library.png" alt="OpenMontage GUI project library (Backlot) — every local production, live status first" width="920"></p>
+
+And when a run is done, hit **▶ REPLAY RUN** — the whole production replays from its timestamps, scrubbable end to end. Full operating guide, including the agent picker and the run/decide/replay controls: [`backlot/README.md`](backlot/README.md).
+
+### OpenMontage GUI FAQ
+
+**What is the OpenMontage GUI?**
+It's Backlot — a local web app, included with OpenMontage, that shows a video production happening live and lets you approve gates, launch agent runs, and replay finished productions from a browser instead of a terminal.
+
+**How do I launch the OpenMontage GUI?**
+Run `python -m backlot open` from the repo root. It starts the local server if needed and opens your browser to the project library.
+
+**Do I need to install anything separate for the GUI?**
+No — it's part of the standard `make setup` install. There's no separate download, account, or cloud dependency; everything runs on your machine.
+
+**Can I control a production entirely from the GUI, without touching the terminal?**
+Yes, once the server is running: pick an agent, launch a run, approve or reject gates, stop a run, and replay a finished one are all clicks on the board.
+
+**Is the OpenMontage GUI free and open source?**
+Yes — same AGPLv3 license as the rest of OpenMontage. No paid tier, no telemetry.
 
 ---
 
@@ -189,8 +217,8 @@ And when a run is done, hit **▶ REPLAY RUN** — the whole production replays 
 ### Install & Run
 
 ```bash
-git clone https://github.com/calesthio/OpenMontage.git
-cd OpenMontage
+git clone https://github.com/ArchiesDubey/OpenMontage-GUI.git
+cd OpenMontage-GUI
 make setup
 ```
 
