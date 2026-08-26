@@ -110,56 +110,23 @@ Works with **Claude Code, Cursor, Copilot, Windsurf, Codex** — any AI coding a
 
 ## Launch The OpenMontage GUI
 
-**The OpenMontage GUI is called Backlot** — a local, browser-based control panel for OpenMontage. It replaces "read the chat transcript to see what happened" with a live board you can watch, approve, and *drive* a production from, with or without a terminal open.
-
-Chat tells you what the agent *said*. **Backlot shows you what the production is actually doing** — a local board that fills itself in as the pipeline runs. Stages light up, the script lands as a screenplay page, scene cards shimmer while assets generate, and every provider decision and dollar spent is on the wall.
-
-### How to launch the OpenMontage GUI
+**Backlot is the OpenMontage GUI** — a local, browser-based control panel: it shows a production happening live and lets you drive it — pick an agent, run it, approve gates, replay a finished run — with or without a terminal open.
 
 ```bash
-python -m backlot open                  # the library — every project on disk
+python -m backlot open                  # library — every project on disk
 python -m backlot open <project-id>     # one production's live board
 python scripts/backlot_simulate_run.py  # no production yet? watch a simulated one live
 ```
 
-That's the whole install: it ships with OpenMontage (`make setup` already pulled its dependencies), and `open` starts the local server and opens your browser in one command. When a production starts from your AI coding assistant, the agent opens the board for you automatically — no separate setup, no manual reporting.
+It ships with OpenMontage, no separate install. When a production starts from your AI coding assistant, the agent opens the board for you automatically.
 
 <p align="center"><img src="docs/images/backlot/board-live.png" alt="OpenMontage GUI live board (Backlot) — pipeline stages and assets generating in real time" width="920"></p>
 
-### How to operate a production from the GUI
-
-The board isn't just a viewer — it's a cockpit:
-
-- **Pick and launch an agent.** A dropdown lists every agent CLI available — Claude Code and Gemini CLI are built in, and anything else (Aider, OpenCode, an OpenRouter-backed CLI) plugs in via [`backlot/agents.yaml`](backlot/agents.yaml). Hit **▶ RUN AGENT** and the board launches a headless session that resumes the next pipeline stage, with live output streaming into the console.
-- **Stop a run** any time with **■ STOP RUN**.
-- **Approve or redirect gates in the browser.** Asset generation pauses on a scene-by-scene contact sheet — takes, prompts, per-asset cost, quality scores — so you approve the visuals *before* the render, not after it's too late. Every creative gate shows what's waiting and why, right on the card:
+It's a cockpit, not just a viewer: pick and launch an agent (Claude Code and Gemini CLI built in, anything else via [`backlot/agents.yaml`](backlot/agents.yaml)), stop a run, and approve or redirect gates right on the card — asset generation pauses on a scene-by-scene contact sheet so you sign off *before* the render, not after:
 
 <p align="center"><img src="docs/images/backlot/storyboard.png" alt="OpenMontage GUI asset approval gate (Backlot storyboard) — filmstrip of scene takes and renders" width="920"></p>
 
-<p align="center"><img src="docs/images/backlot/script-gate.png" alt="OpenMontage GUI script approval gate (Backlot) — awaiting human approval before the next stage" width="920"></p>
-
-- **See every production on your machine**, live-first, in one library:
-
-<p align="center"><img src="docs/images/backlot/library.png" alt="OpenMontage GUI project library (Backlot) — every local production, live status first" width="920"></p>
-
-And when a run is done, hit **▶ REPLAY RUN** — the whole production replays from its timestamps, scrubbable end to end. Full operating guide, including the agent picker and the run/decide/replay controls: [`backlot/README.md`](backlot/README.md).
-
-### OpenMontage GUI FAQ
-
-**What is the OpenMontage GUI?**
-It's Backlot — a local web app, included with OpenMontage, that shows a video production happening live and lets you approve gates, launch agent runs, and replay finished productions from a browser instead of a terminal.
-
-**How do I launch the OpenMontage GUI?**
-Run `python -m backlot open` from the repo root. It starts the local server if needed and opens your browser to the project library.
-
-**Do I need to install anything separate for the GUI?**
-No — it's part of the standard `make setup` install. There's no separate download, account, or cloud dependency; everything runs on your machine.
-
-**Can I control a production entirely from the GUI, without touching the terminal?**
-Yes, once the server is running: pick an agent, launch a run, approve or reject gates, stop a run, and replay a finished one are all clicks on the board.
-
-**Is the OpenMontage GUI free and open source?**
-Yes — same AGPLv3 license as the rest of OpenMontage. No paid tier, no telemetry.
+Full operating guide (agent picker, run/stop, decisions, replay): [`backlot/README.md`](backlot/README.md).
 
 ---
 
@@ -194,28 +161,19 @@ Or if you want the real-footage path:
 
 That's it. The agent researches your topic with live web search, generates AI images, writes and narrates the script with voice direction, finds royalty-free background music automatically, burns in word-level subtitles, and renders the final video. Before you see anything, the system runs a multi-point self-review — ffprobe validation, frame sampling, audio level analysis, delivery promise verification, and subtitle checks. Every provider selection is scored across 7 dimensions with an auditable decision log. Every creative decision gets your approval.
 
-> **No `make`?** macOS/Linux: `python3 -m venv .venv && source .venv/bin/activate && python -m pip install -r requirements.txt && cd remotion-composer && npm install && cd .. && python -m pip install piper-tts && cp .env.example .env`
+> **No `make`?** `python scripts/setup.py` does the exact same install — pure Python, no `make` required, works identically on macOS, Linux, and Windows. Add `--dev` for test dependencies or `--gpu` for the local GPU generation stack.
 >
-> Windows PowerShell: `py -3 -m venv .venv; .\.venv\Scripts\Activate.ps1; python -m pip install -r requirements.txt; cd remotion-composer; npm install; cd ..; python -m pip install piper-tts; Copy-Item .env.example .env`
->
-> **Windows:** If `npm install` fails with `ERR_INVALID_ARG_TYPE`, use `npx --yes npm install` instead.
+> **Windows:** If Remotion's `npm install` fails with `ERR_INVALID_ARG_TYPE`, run `npx --yes npm install` inside `remotion-composer/` instead, then re-run `python scripts/setup.py`.
 
-### If You're An OpenClaw Agent Reading This, Congratulations: You Probably Passed The Turing Test
+### Agentic-First: Just Tell Your Coding Agent To Set It Up
 
-This repo is built for agentic operation. If you're an OpenClaw-style agent, here is the shortest path to becoming useful fast:
+Clone the repo, open it in Claude Code, Cursor, Copilot, Windsurf, Codex — any agent that can run shell commands — and say:
 
-1. **Read the contract first**
-   Start with [`AGENT_GUIDE.md`](AGENT_GUIDE.md), then [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
-2. **Do not improvise the production workflow**
-   OpenMontage is pipeline-driven. Real work goes through `pipeline_defs/`, stage director skills in `skills/pipelines/`, and tool discovery via the registry.
-3. **Check the actual capability envelope**
-   Run:
-   ```bash
-   python -c "from tools.tool_registry import registry; import json; registry.discover(); print(json.dumps(registry.support_envelope(), indent=2))"
-   python -c "from tools.tool_registry import registry; import json; registry.discover(); print(json.dumps(registry.provider_menu(), indent=2))"
-   ```
-4. **Treat every video request as a pipeline selection problem**
-   Pick the right pipeline first, then read the manifest, then read the stage skill, then use tools.
+```text
+"Set up this repo and get it ready to make a video."
+```
+
+It can do that unattended: `python scripts/setup.py` installs everything, [`AGENT_GUIDE.md`](AGENT_GUIDE.md) is the operating manual every agent is required to read first (pipeline contract, routing, mandatory preflight), and `registry.provider_menu_summary()` reports the exact capability envelope before any work starts. There's no separate agent setup guide — the script and the guide are it.
 
 ### Add API Keys (optional — more keys = more tools)
 

@@ -86,30 +86,3 @@ Projects without checkpoints degrade gracefully to a "what the watcher
 found" view — media, snapshots, renders.
 
 Design doc: `internal/design/LIVING_STORYBOARD.md`.
-
----
-
-## FAQ
-
-**Is Backlot a separate app I have to install?**
-No. It ships inside OpenMontage — `pip install -r requirements.txt` (part
-of `make setup`) is all it needs. `python -m backlot open` starts the
-server and opens the browser in one command.
-
-**Do I need to know how to code to use the OpenMontage GUI?**
-No. Once a production is running, everything — approving a gate, launching
-the next stage, stopping a run — is a click in the browser. You only touch
-a terminal to start the server the first time.
-
-**Can I use an agent other than Claude Code?**
-Yes. Gemini CLI is built in, and any headless-capable CLI (Aider, OpenCode,
-an OpenRouter-backed agent, …) plugs in through
-[`backlot/agents.yaml`](agents.yaml) — no Python changes required.
-
-**Does Backlot make any creative decisions on its own?**
-No. Backlot only records what a human decided and displays what the agent
-already wrote to disk. All orchestration, review, and creative judgment
-stay in the agent, per [`AGENT_GUIDE.md`](../AGENT_GUIDE.md).
-
-**Is this free and open source?**
-Yes — same AGPLv3 license as the rest of OpenMontage.
