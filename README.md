@@ -711,23 +711,11 @@ OpenMontage is built to be extended. The two most common contributions:
 
 See `docs/ARCHITECTURE.md` for the full technical reference, `docs/PROVIDERS.md` for the complete provider guide (setup, pricing, free tiers), and `AGENT_GUIDE.md` for the agent contract.
 
-### Join the Community
+### Community & Contact
 
-We use [GitHub Discussions](https://github.com/calesthio/OpenMontage/discussions) to share work and ideas:
+This fork doesn't run a separate community — for general OpenMontage discussion, the upstream project is the active hub: [GitHub Discussions](https://github.com/calesthio/OpenMontage/discussions) (Show and Tell, Ideas, Q&A), [GitHub Issues](https://github.com/calesthio/OpenMontage/issues), and [@calesthioailabs on X](https://x.com/calesthioailabs) for release and build updates.
 
-- **[Show and Tell](https://github.com/calesthio/OpenMontage/discussions/categories/show-and-tell)** — Share videos you've made, prompts that worked well, or creative workflows you've discovered
-- **[Ideas](https://github.com/calesthio/OpenMontage/discussions/categories/ideas)** — Suggest new pipelines, tools, style playbooks, or integrations
-- **[Q&A](https://github.com/calesthio/OpenMontage/discussions/categories/q-a)** — Ask questions about setup, pipelines, or troubleshooting
-
-Made something cool? Post it in Show and Tell — we'd love to see what you build.
-
----
-
-## Contact
-
-For updates, releases, and behind-the-scenes build notes, follow [@calesthioailabs](https://x.com/calesthioailabs).
-
-For bugs, feature requests, and workflow discussions, use [GitHub Issues](https://github.com/calesthio/OpenMontage/issues) and [GitHub Discussions](https://github.com/calesthio/OpenMontage/discussions) so everything stays visible and actionable.
+For anything specific to this fork — the Backlot GUI/cockpit, or bugs in code only found here — open an issue or PR on [this repo](https://github.com/ArchiesDubey/OpenMontage-GUI).
 
 ---
 
@@ -740,18 +728,6 @@ make test-contracts
 # Run all tests
 make test
 ```
-
----
-
-## Star History
-
-<a href="https://star-history.dera.page/#calesthio/OpenMontage&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=calesthio/OpenMontage&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=calesthio/OpenMontage&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=calesthio/OpenMontage&type=date&legend=top-left" />
-  </picture>
-</a>
 
 ---
 
