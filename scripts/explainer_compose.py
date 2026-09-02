@@ -47,6 +47,11 @@ DEFAULTS = {
     "mode_overrides": {},        # scene-id -> in|out|micro|static|card
     "card_text_overrides": {},   # scene-id -> card text
     "extra_spot_times": [],      # extra verification frame times (seconds)
+    "burn_subtitles": True,      # False -> deliver subtitles.srt as a sidecar only
+                                 #          (no subtitles filter, no force_style, no
+                                 #          burn into the video). The merged SRT is
+                                 #          still written beside the MP4.
+    "sidecar_srt_name": "subtitles.srt",  # sidecar copy of the merged SRT
 }
 
 FORCE_STYLE = ("FontName=Georgia,FontSize=18,Bold=1,PrimaryColour=&H00F2EDE4,"
@@ -356,14 +361,28 @@ def main():
     subs.write_text("\n\n".join(blocks) + "\n")
     print(f"subs: {idx} cues")
 
-    # --- final mux with burned subtitles ---
-    sub_escaped = str(subs).replace(":", "\\:")
-    subprocess.run([
-        "ffmpeg", "-y", "-i", str(assets_dir / "video.mp4"),
-        "-i", str(assets_dir / "audio_mix.m4a"),
-        "-vf", f"subtitles={sub_escaped}:force_style='{FORCE_STYLE}'",
-        "-c:v", "libx264", "-crf", "18", "-c:a", "copy", "-shortest",
-        str(out_mp4)], check=True, capture_output=True)
+    # sidecar copy of the merged SRT beside the final MP4 (always written)
+    sidecar = out_mp4.with_name(cfg["sidecar_srt_name"])
+    sidecar.write_text(subs.read_text())
+    print(f"sidecar SRT -> {sidecar}")
+
+    # --- final mux ---
+    if cfg["burn_subtitles"]:
+        sub_escaped = str(subs).replace(":", "\\:")
+        subprocess.run([
+            "ffmpeg", "-y", "-i", str(assets_dir / "video.mp4"),
+            "-i", str(assets_dir / "audio_mix.m4a"),
+            "-vf", f"subtitles={sub_escaped}:force_style='{FORCE_STYLE}'",
+            "-c:v", "libx264", "-crf", "18", "-c:a", "copy", "-shortest",
+            str(out_mp4)], check=True, capture_output=True)
+    else:
+        # no subtitles filter, no force_style, no burn-in; SRT is sidecar only
+        subprocess.run([
+            "ffmpeg", "-y", "-i", str(assets_dir / "video.mp4"),
+            "-i", str(assets_dir / "audio_mix.m4a"),
+            "-c:v", "libx264", "-crf", "18", "-c:a", "copy", "-shortest",
+            str(out_mp4)], check=True, capture_output=True)
+        print("burn_subtitles=False -> final MP4 has no burned captions and no muxed subtitle stream")
 
     # --- verify: duration + auto-extracted spot-check frames ---
     # NOTE: concat video runs ~N_segments/fps shorter than the formula total

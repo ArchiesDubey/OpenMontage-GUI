@@ -1,0 +1,155 @@
+# Ink & Testimony — custom style playbook.
+# Validated across sample_v2, E01 (99s, $1.73) and E02 (~10 min, 81 beats).
+# Authoritative prompt blocks live here; the channel workflow that drives them
+# (scale model, budget, gate discipline, production lessons) is the /ink-testimony
+# skill at .claude/skills/ink-testimony/.
+# LOCKED — do not re-derive, reorder or "improve" without the user asking.
+
+identity:
+  name: "Ink & Testimony"
+  category: custom
+  mood: somber, forensic, archival
+  pace: deliberate
+  best_for: >-
+    Narrative-history long-form: a physical object or record treated as a witness,
+    the dark history reconstructed behind it. Faceless 8-12 minute narrated YouTube
+    episodes, hand-inked stills, hard cuts, burned subtitles.
+
+taste_profile:
+  design_read: "1920s editorial illustration as evidence. Restraint and specificity carry the weight; no drama in the mark-making, all of it in what is depicted."
+  visual_variance: 4
+  motion_intensity: 2
+  information_density: 3
+  palette_discipline: "Black ink and soft gray washes on warm white paper. No saturated colour anywhere. The only tonal event is the inversion to white-ink-on-black."
+  layout_variation: "One still per SHOT, slow zoompan, hard cut on the next narration start. 2-6s per shot (typical 3.5s); multiple shots per narration clip. Cut to a new frame or a hard crop into a different region of the same still (a crop only reads as a new shot INSIDE its own beat). Reuse an anchor frame across consecutive same-location shots rather than regenerating."
+  reference_strategy: "Reuse approved anchor frames from the prior episode wherever a beat genuinely matches. The INK_STYLE block is never re-authored per scene. Detail crops of one still stretch coverage for free."
+  anti_patterns:
+    - "photographic or 3D-rendered drift (fixed by stating the medium first)"
+    - "any saturated or full-colour passage"
+    - "generated on-screen text, numerals, labels, signatures or drawn borders (FLUX writes faux headlines on any newspaper / storefront / wall / calendar -- remove the object, crop it out, or composite real type)"
+    - "white-on-black used for mood rather than for injury / forensic / danger"
+    - "comma-grouped or bare numerals in narration text sent to TTS"
+    - "merging script sentences into one 8-18s narration clip on a single still (E03 v1 failure: 59/87 shots over 6s)"
+    - "a still repeated across a beat boundary, or a crop of a still used in a later beat that already showed it"
+    - "generating a calendar for an on-screen date -- use a composited date card instead"
+  quality_gates:
+    - "Does every frame obey the guard: full-bleed, no border, no plate frame, no label, no text or numbers?"
+    - "Hero frames: is this actually the subject the narration describes? (E03 v1 shipped a sinking ship for the bridge collapse.)"
+    - "Is white-ink-on-black reserved for an injury, forensic or danger beat?"
+    - "Per-shot hold: mean 3-4s, max <=6s, zero over 6s? No still repeated across a beat boundary?"
+    - "Were all numbers, dates and figures spelled out in the narration provider_text?"
+
+visual_language:
+  color_palette:
+    primary: ["#1A1714", "#6E6A63"]
+    accent: ["#F2EDE4"]
+    background: "#F4EFE6"
+    text: "#F2EDE4"
+    muted: "#8A847A"
+  composition: >-
+    Eye-level, single subject, generous warm-white paper margin. Fine cross-hatching and
+    dry-brush texture. Expressive hand-inked faces. High contrast, matte paper grain.
+  texture: "Matte paper grain with visible ink hatching; dry-brush gray washes in the light register, dense white line work on pure black in the dark register."
+
+typography:
+  headings:
+    font: "Georgia"
+    weight: 700
+    tracking: "0"
+  body:
+    font: "Georgia"
+    weight: 400
+    line_height: 1.4
+  stat_card:
+    font: "Georgia"
+    weight: 700
+    size_multiplier: 3.0
+  scale_system: "major_third"
+  weight_matrix:
+    title: 700
+    heading: 700
+    body: 400
+    caption: 400
+
+motion:
+  transitions: [cut, fade]
+  animation_style: "Slow zoompan (Ken Burns) on each still; hard cut on the next narration start. One still per SHOT; multiple shots per narration clip are expected (cut to a new frame or a hard crop into a different region of the same still). Fade in from black on the first shot, fade to black on the last."
+  # E03: the grammar is one still per shot + hard cut, so the narration clip length IS
+  # the cut rhythm. Beats are short single sentences (~2-5s). E03 v1 shipped 8-18s clips
+  # on single stills (59/87 shots over 6s, a 16s opening hold) and had to be re-cut.
+  pacing_rules:
+    min_shot_hold_seconds: 2.5
+    max_shot_hold_seconds: 6.0          # HARD max; typical 2.5-4.0
+    typical_shot_hold_seconds: 3.5
+    deliberate_hold_seconds: 5.5        # cold-open establishing frame; final fade beat only
+    text_card_hold_seconds: 3.0
+    date_card_hold_seconds: 2.8         # composited "MONTH YEAR" over the dimmed prior frame
+    transition_duration_seconds: 0.5
+    shots_per_10min: "130-170"
+  entrance: "slow opacity ramp out of black on the first shot only"
+  exit: "hard cut between shots; long fade to black on the final shot"
+
+audio:
+  voice_style: "low, unhurried, measured; respectful to victims and subject alike, never sensational"
+  music_mood: "sad somber dark ambient orchestral documentary; sparse, no percussion bed"
+  music_volume: 0.14
+  sfx_style: "none — narration and music bed only"
+  ducking_threshold_db: -14
+
+asset_generation:
+  # LOCKED. This is the INK_STYLE block from scripts/e01_generate_assets.py, verbatim.
+  # PROMPT ORDER IS LOAD-BEARING and NOT the usual prefix order:
+  #   "Pen-and-ink illustration with soft gray brush washes on warm white paper: <SCENE>. "
+  #   + <optional reinforcement clauses> + <this block>
+  # State the MEDIUM FIRST, scene after, this block last. Character-/style-first ordering
+  # caused a photographic-drift failure in E01 scene-08.
+  # Model: flux_image -> flux-pro/v1.1 at 1280x720. Seeds continue one band: E01 used
+  # 119000-119015, E02 119020+. Never reset the seed band between episodes.
+  image_prompt_prefix: >-
+    Historical narrative illustration in black-and-white pen-and-ink with soft gray brush
+    washes on warm white paper, fine cross-hatching and dry-brush texture, expressive
+    hand-inked faces, 1920s editorial illustration style, high contrast, matte paper grain.
+    No text or numbers anywhere. Full-bleed image, no border, no plate frame, no label.
+  image_negative_prompt: ""
+  # DARK REGISTER — reserved for injury, forensic, danger and violence beats ONLY.
+  # This is the INK_STYLE_DARK block, verbatim. Same medium-first ordering.
+  diagram_style: >-
+    Historical narrative illustration rendered as fine white ink lines on a pure black
+    background, delicate cross-hatching, 1920s editorial style, high contrast. No text or
+    numbers anywhere. Full-bleed image, no border, no plate frame, no label.
+  consistency_anchors:
+    - "PROMPT ORDER: medium sentence first ('Pen-and-ink illustration with soft gray brush washes on warm white paper:'), then the scene, then the INK_STYLE / INK_STYLE_DARK block. Never character- or style-first — that drifted to photographic in E01 scene-08."
+    - "One continuous seed band across all episodes. E01: 119000-119015. E02: 119020+. Continue upward; never reset."
+    - "White-ink-on-black (diagram_style) is a meaning, not a mood: use it only for injury, forensic, danger or violence beats."
+    - "Reuse an approved anchor frame across consecutive same-location beats. E01 held 17 beats on 8 frames. Regenerate only when the location or subject genuinely changes."
+    - "E01 anchor frames are topic-specific (dial / green glow / bones / factory floor). Do not force them onto a new episode's beats — generate fresh."
+    - "Never generate text, numerals, labels, signatures or a drawn border into an image. Diffusion output is gibberish; all on-screen type is composited in the render layer."
+    - "FLUX has no negative prompts. For a stubborn frame, append POSITIVE reinforcement to the scene sentence: 'Absolutely no artist signature, no monogram, no lettering, no drawn border line or picture frame anywhere in the image.' For a dark-register blackout: 'The white ink linework must be clearly visible and legible against the black background — do not render a solid or near-solid black frame with no visible subject.'"
+    - "Scale and framing are the loosest axes on flux-pro/v1.1 — budget a re-roll with a fresh seed rather than fighting it in prose."
+    - "After every batch: write 480px JPEG previews to _preview/ (PNGs exceed the inline image limit) and eyeball EVERY frame against the guard before composing. Regenerate failures medium-first with a fresh seed; log seed + reason."
+
+overlays:
+  stat_card:
+    bg: "#1A1714"
+    border: "#6E6A63"
+    text: "#F2EDE4"
+    radius: 2
+    highlight: "#F2EDE4"
+  key_term:
+    bg: "#000000"
+    text: "#FFFFFF"
+    highlight: "#F2EDE4"
+  section_title:
+    bg: "#1A1714"
+    text: "#F2EDE4"
+
+quality_rules:
+  - "Every frame obeys the guard verbatim: 'Full-bleed image, no border, no plate frame, no label. No text or numbers anywhere.'"
+  - "All on-screen text — act-break cards, date/place cards, subtitles, stat callouts — is composited in the render layer as real type, never generated into the image. Cards use ffmpeg drawtext (Georgia). A cold date-and-place line ('The month is January, nineteen oh nine') gets a composited date card, NEVER a generated calendar."
+  - "Narration provider_text spells out every number, date and figure ('nineteen thirty', 'eighteen ninety-six'). eleven_multilingual_v2 misreads comma-grouped numerals ('1,600' -> 'section' in E01). Display/card text keeps proper numerals; the sidecar SRT gets them back automatically because whisper re-normalizes the spoken words to digits."
+  - "No audio tags in the narration text. Run the humanizer pass before TTS (no em/en dashes in spoken text, plain verbs, no 'the real question is' / 'let's look at')."
+  - "White-ink-on-black is reserved for injury, forensic, danger and violence beats."
+  - "Prompt order is medium-first: state the pen-and-ink medium, then the scene, then the style block. FLUX writes faux headlines on any paper/storefront/wall/calendar — keep the text object out of frame, show it edge-on, crop it out, or composite the type."
+  - "One still per SHOT at 2-6s (typical 3.5s), ~130-170 shots for a 10-min episode; beats are short single sentences, never merged; multiple shots per narration clip; hard cut on the next narration start; slow zoompan throughout; fade in on shot one and fade to black on the last shot."
+  - "Hero frames (the 3-5 highest-stakes beats) get a subject-accuracy pass: is this actually what the narration describes? (E03 v1 rendered the Silver Bridge collapse as a sinking ocean liner.)"
+  - "Narrator voice is fixed for series continuity: ElevenLabs voice S9GPGBaMND8XWwwzxQXp, eleven_multilingual_v2, stability 0.75, similarity_boost 0.9, style 0.1, speed 1.0."

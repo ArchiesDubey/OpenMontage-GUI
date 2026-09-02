@@ -185,6 +185,19 @@ as a single Remotion composition using the Explainer entry point. No FFmpeg asse
 The edit_decisions cuts array maps directly to Remotion props. See `skills/core/remotion.md`
 for the proven formula — especially the all-dark-background rule for visual consistency.
 
+**Run long renders detached (field-tested, this environment):** a plain `nohup … &`
+background gets SIGSTOPped by terminal job control and silently stalls. Use
+`screen -dmS <name> bash -c '<render cmd> 2>&1 | tee <logfile>'` and poll the logfile
+instead of foreground-waiting.
+
+**Data-driven stills compose (FFmpeg zoompan slideshows):** when the render is
+timestamp-named stills + narration + hard cuts (not a Remotion component video), drive
+timing/segments/text-cards/fades directly from `scene_plan.json` rather than a
+hand-built scene table, and assert the timeline before rendering:
+`assert abs(sum(segment_durations) - total_audio) < 0.05`. This caught a real
+off-by-one-beat bug on the Ink & Testimony channel. Split a text card from its
+narration clip at transcript **word-timestamp** boundaries, not a guessed offset.
+
 ### Step 5: Audio Post-Processing
 
 **Remotion path (DEFAULT):** Skip external audio mixing entirely. Remotion handles all audio

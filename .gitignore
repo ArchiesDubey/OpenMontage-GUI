@@ -28,6 +28,10 @@ tests/qa/output/
 # Project workspaces (generated assets, renders — all regenerable)
 projects/
 
+# Export bundles (packaged video + metadata for upload — regenerable via
+# export_bundle from the project workspace; contains the large final MP4)
+exports/
+
 # Corpus directories (downloaded stock clips, thumbnails, embeddings —
 # regenerable from source APIs via corpus_builder). Explicit rule even
 # though most corpora live under projects/ since agents sometimes

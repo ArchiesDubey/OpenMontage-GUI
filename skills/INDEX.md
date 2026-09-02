@@ -305,6 +305,7 @@ Style playbooks (`styles/*.yaml`) define visual language, typography, motion, au
 | `flat-motion-graphics` | motion-graphics | energetic, bold | Social media, TikTok, startups |
 | `minimalist-diagram` | whiteboard | focused, technical | Technical deep-dives, architecture |
 | `witness-archive` | cinematic | hushed, forensic, spectral | Dark-history long-form: atrocities, disasters, origins of dangerous things. Faceless 8-20 minute narration channels |
+| `ink-testimony` | custom | somber, forensic, archival | Narrative-history long-form: a physical object or record as witness to a dark history. Faceless 8-12 minute narrated channels, 1920s pen-and-ink stills, hard cuts, burned subtitles |
 
 Load via `styles/playbook_loader.py`: `load_playbook("clean-professional")`
 
@@ -314,6 +315,15 @@ prepended to every narrative-register prompt for cross-episode continuity, plus 
 see "Strategy 4 — Locked Style Block, Scene Text First" in `creative/image-gen-usage.md`.
 The channel workflow that drives it (episode ideation, narration voice, quality gates) lives in
 the `/witness-archive` skill at `.claude/skills/witness-archive/`.
+
+`ink-testimony` also carries a **locked style block** (`image_prompt_prefix` = the INK_STYLE
+pen-and-ink block; `diagram_style` = the INK_STYLE_DARK white-on-black register reserved for
+injury/forensic/danger beats). Its ordering is **medium-first** — `"Pen-and-ink illustration
+with soft gray brush washes on warm white paper: <scene>. " + <block>` — not the scene-first
+order `witness-archive` uses; character-/style-first ordering drifted to photographic in E01.
+Seeds run one continuous band across every episode (E01 119000+, E02 119020+). The channel
+workflow that drives it (scale model, budget, gate discipline, the six E01/E02 production
+lessons) lives in the `/ink-testimony` skill at `.claude/skills/ink-testimony/`.
 
 ## Installed Agent Skills (Layer 3)
 

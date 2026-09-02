@@ -24,7 +24,7 @@ from tools.base_tool import (
 
 class FluxImage(BaseTool):
     name = "flux_image"
-    version = "0.2.0"
+    version = "0.3.0"
     tier = ToolTier.GENERATE
     capability = "image_generation"
     provider = "flux"
@@ -49,7 +49,8 @@ class FluxImage(BaseTool):
     best_for = [
         "photorealistic images",
         "general-purpose image generation",
-        "high quality at low cost (~$0.025/megapixel)",
+        "high quality at low cost (flux-2 ~$0.012/MP, flux/dev ~$0.025/MP)",
+        "style-consistent batches / series work (flux-2, seed + richer prompt adherence)",
     ]
     not_good_for = ["text rendering in images", "offline generation"]
 
@@ -63,7 +64,13 @@ class FluxImage(BaseTool):
             "height": {"type": "integer", "default": 1024},
             "model": {
                 "type": "string",
-                "enum": ["flux-pro/v1.1", "flux/dev", "flux/schnell", "flux-pro"],
+                "enum": [
+                    "flux-2",
+                    "flux-pro/v1.1",
+                    "flux/dev",
+                    "flux/schnell",
+                    "flux-pro",
+                ],
                 "default": "flux-pro/v1.1",
             },
             "seed": {"type": "integer"},
@@ -90,6 +97,7 @@ class FluxImage(BaseTool):
         return ToolStatus.UNAVAILABLE
 
     # fal.ai billing model (verified against fal.ai model pages, 2026-08):
+    #   flux-2       — $0.012 per megapixel  (FLUX.2 [dev], endpoint fal-ai/flux-2)
     #   flux/dev     — $0.025 per megapixel
     #   flux/schnell — $0.003 per megapixel
     #   flux-pro/*   — flat $0.05 per image
@@ -101,6 +109,7 @@ class FluxImage(BaseTool):
     # exact megapixels at the per-MP rate, rounded UP to the nearest tenth of a
     # cent so estimates stay mildly conservative.
     _FAL_PRICE_PER_MP = {
+        "flux-2": 0.012,
         "dev": 0.025,
         "schnell": 0.003,
     }
@@ -113,7 +122,12 @@ class FluxImage(BaseTool):
         width = int(inputs.get("width") or 1024)
         height = int(inputs.get("height") or 1024)
         megapixels = (width * height) / 1_000_000
-        rate = self._FAL_PRICE_PER_MP["dev"] if "dev" in model else self._FAL_PRICE_PER_MP["schnell"]
+        if model == "flux-2":
+            rate = self._FAL_PRICE_PER_MP["flux-2"]
+        elif "dev" in model:
+            rate = self._FAL_PRICE_PER_MP["dev"]
+        else:
+            rate = self._FAL_PRICE_PER_MP["schnell"]
         # Round up to the nearest $0.001 — never under-quote.
         return math.ceil(megapixels * rate * 1000) / 1000
 
