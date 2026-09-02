@@ -100,6 +100,13 @@ For each script section:
 
 **Pronunciation guide**: If the script contains technical terms, jargon, or names with non-obvious pronunciation, include a pronunciation map in the TTS request.
 
+**Numeral misnormalization (field-tested — ElevenLabs `eleven_multilingual_v2`)**: this
+model misreads comma-grouped numerals and bare dates — on the Ink & Testimony channel
+`"1,600"` was read aloud as the word *"section"*. Spell out **every** number, date and
+figure in `provider_text` (`"nineteen thirty"`, `"four hundred and thirty-six"`, `"ten
+thousand dollars"`). Keep proper numerals in `display_text` / subtitles — those are
+composited, not spoken. Avoid audio tags with this model.
+
 **Flat voice failure:** If the approved voice sounds monotone, robotic, rushed,
 or ignores intended pauses, do not batch the remaining sections. Revise the
 `voice_performance` plan or provider parameters and regenerate the sample.
@@ -118,6 +125,16 @@ Process asset tasks grouped by tool for efficiency:
 3. Include consistency anchors (same character/world/palette family), but do NOT reuse the exact same phrasing for every image
 4. Generate and verify the file exists
 5. If the result doesn't match expectations, refine the prompt and regenerate (max 2 retries)
+
+**Batch → preview → guard review (field-tested)**: after every image batch, write
+**480px JPEG** previews to `<assets>/_preview/` (full-size PNGs exceed the inline image
+limit and can't be reviewed), then look at **every** frame against the playbook's guard
+clause before composing. Regenerate each failure with a **fresh seed** (never the failed
+one) and log `{scene, new_seed, reason}` in the asset metadata. When a locked style
+block has a fixed prompt order (e.g. Ink & Testimony's medium-first), regenerate in that
+order. When reusing prior-episode anchor frames, filter on the asset's `source ==
+"generate"` — not on `scene.type` — or "REUSE …" placeholder strings get sent to the
+image model as prompts.
 
 **Diagrams (`diagram_gen`)**:
 1. Convert the scene description into valid Mermaid syntax

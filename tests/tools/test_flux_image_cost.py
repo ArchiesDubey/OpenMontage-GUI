@@ -47,6 +47,16 @@ def test_default_size_matches_schema_defaults(tool):
     )
 
 
+def test_flux2_bills_at_its_own_rate(tool):
+    # FLUX.2 [dev] endpoint fal-ai/flux-2 = $0.012/MP, cheaper than flux/dev.
+    # 1280x720 = 0.9216 MP x $0.012 = $0.01106 -> rounds up to $0.012.
+    assert tool.estimate_cost({"model": "flux-2", "width": 1280, "height": 720}) == 0.012
+    # 1024x1024 = 1.0486 MP x $0.012 = $0.01258 -> rounds up to $0.013.
+    assert tool.estimate_cost({"model": "flux-2", "width": 1024, "height": 1024}) == 0.013
+    # Must not fall through to schnell's 0.003 rate (the pre-0.3.0 bug path).
+    assert tool.estimate_cost({"model": "flux-2", "width": 1024, "height": 1024}) != 0.004
+
+
 def test_pro_stays_flat_per_image(tool):
     assert tool.estimate_cost({"model": "flux-pro/v1.1", "width": 512, "height": 512}) == 0.05
     assert tool.estimate_cost({"model": "flux-pro/v1.1", "width": 2048, "height": 2048}) == 0.05

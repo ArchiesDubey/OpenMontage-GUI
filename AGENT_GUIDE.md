@@ -640,6 +640,7 @@ Tool rules:
 | `minimalist-diagram` | Technical deep-dives, architecture |
 | `ink-sketch` (Ink Theater) | Hand-drawn ink-on-white doodle animation; a character that draws itself, walks, dances; contraption explainers |
 | `witness-archive` | Dark-history long-form: atrocities, disasters, origins of dangerous things. Faceless 8-20 minute narration channels. Two-register system (painterly ash-and-sepia narrative frames / white-chalk-on-black-slate explainer diagrams) with a recurring faceless character |
+| `ink-testimony` | Narrative-history long-form: one physical object or record treated as a witness to a dark history. Faceless 8-12 minute narrated channels, 1920s black-and-white pen-and-ink stills with gray washes, white-on-black inversion for injury/forensic beats, ~7s/beat, hard cuts, burned subtitles. Channel workflow: `/ink-testimony` skill |
 
 For custom, atelier, brand, launch, or hero work, read `skills/meta/taste-direction.md` before choosing a playbook. Carry its `taste_profile` into the proposal so later stages can preserve the design read, visual variance, motion intensity, information density, reference strategy, and anti-patterns.
 

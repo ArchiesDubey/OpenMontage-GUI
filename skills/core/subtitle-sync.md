@@ -72,6 +72,22 @@ margin_v: 40
 alignment: 2
 ```
 
+### Backplane for busy / high-contrast footage (BorderStyle=3)
+
+When frames swing between light and dark (e.g. a pen-and-ink channel that inverts to
+white-on-black for some beats), an outline alone fails on one polarity. Draw a
+semi-transparent box behind the text instead — `BorderStyle=3` turns `Outline` into a
+padded background plate and `BackColour` sets its fill. Field-tested on the Ink &
+Testimony channel:
+
+```
+FontName=Georgia,FontSize=18,Bold=1,PrimaryColour=&H00F2EDE4,
+BorderStyle=3,BackColour=&H80000000,Outline=10,Shadow=0,MarginV=42
+```
+
+`BackColour=&H80000000` is 50%-alpha black; `Outline=10` is the plate's padding, not a
+stroke; `Shadow=0` because the plate already separates text from the image.
+
 ### Common Mistakes
 
 - **Wrong color format:** `&HFFFFFF` breaks positioning. Always use full 8-char `&H00FFFFFF`.
