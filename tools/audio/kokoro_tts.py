@@ -280,16 +280,23 @@ class KokoroTTS(BaseTool):
         provider="kokoro", runtime=LOCAL and cost 0.0, and must stay true to that.
         """
         cmd = [
-            "npx", "hyperframes", "tts", text,
+            "npx", "hyperframes", "tts",
             "--voice", voice,
             "--speed", str(speed),
             "-o", str(dest),
         ]
         if lang:
             cmd += ["--lang", lang]
+        cmd.append(text)
+
+        import os
+        import sys
+        env = dict(os.environ)
+        if "HYPERFRAMES_PYTHON" not in env:
+            env["HYPERFRAMES_PYTHON"] = sys.executable
 
         # Generous timeout: the first ever call downloads the ~310MB model.
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=1800, env=env)
         if proc.returncode != 0:
             return f"hyperframes tts exit {proc.returncode}: {proc.stderr.strip()[-500:]}"
         if not dest.exists():

@@ -136,6 +136,15 @@ order. When reusing prior-episode anchor frames, filter on the asset's `source =
 "generate"` — not on `scene.type` — or "REUSE …" placeholder strings get sent to the
 image model as prompts.
 
+**Google Flow Path — Human-in-the-Loop Web Studio (`google_flow_bridge` + `google_flow_driver`)**:
+When the user chooses Google Flow, or when paid generation APIs (like fal.ai) are unavailable or declined:
+1. **Export Prompts**: Call `google_flow_bridge` with `{"operation": "export", "project_id": "<project_id>", "aspect_ratio": "<aspect_ratio>"}`.
+   This translates each scene into Google Flow prompt syntax with cinematic slash commands (`/bokeh`, `/cinematic`, `/volumetric_lighting`), writes `exports/google_flow/prompts.md`, and generates `exports/google_flow/queue.csv`.
+2. **Automated Generation (`google_flow_driver`)**: Before falling back to a fully manual loop, run `python -m tools.graphics.google_flow_driver dry_run <project_id>` to verify the Flow UI selectors, then `python -m tools.graphics.google_flow_driver run <project_id>`. The driver opens flow.google in the user's own Chrome (dedicated profile, one-time login), opens a project, sets the Nano Banana image model / aspect ratio / outputs in the settings panel, submits each queued prompt with randomized jitter, and captures each finished image at 2K. Two capture modes: `--upscale fast` (default, bulk-safe — a single authenticated fetch of the native master plus a local 2× Lanczos upscale, no download manager, Chrome-crash-proof) and `--upscale flow` (clicks Flow's download flyout for Google's true in-browser SR; includes crash salvage of complete `.crdownload` files). Rate limits trigger exponential backoff. Interrupted runs resume from `exports/google_flow/driver_state.json`, and `capture <project_id>` re-fetches already-generated images without new credits. Announce to the user that the run uses their Flow account credits (the driver auto-confirms the agent's spend dialog unless `--no-auto-confirm`) and they should keep the opened window visible the first time (to complete login).
+3. **Manual Fallback**: If the driver is unavailable or the user prefers hands-on control, set the stage checkpoint to `awaiting_human`. Present the prompt checklist and instruct the user to generate the scenes at `flow.google` and drop the downloaded images into `projects/<project_id>/drop_images/`.
+4. **Sequence-Safe Ingestion**: Run `google_flow_bridge` with `{"operation": "ingest", "project_id": "<project_id>"}`. The bridge sorts by filename index or download timestamp, verifies resolution, saves `assets/images/scene_<id>.png`, generates 480px previews in `assets/_preview/`, and writes a validated `artifacts/asset_manifest.json`.
+
+
 **Diagrams (`diagram_gen`)**:
 1. Convert the scene description into valid Mermaid syntax
 2. Apply playbook's `asset_generation.diagram_style`

@@ -95,6 +95,9 @@ Optional generated assets should fill clear gaps:
 
 For motion-required jobs, use `video_selector` first for generated shots. `image_selector` may support look development, concept frames, or embedded design layers, but it does not satisfy the motion requirement by itself.
 
+When producing still plates, look-dev frames, or concept art in **Google Flow** (flow.google), use `google_flow_bridge` to export prompts (`exports/google_flow/prompts.md` and `queue.csv`) with `/cinematic`, `/bokeh`, and `/dramatic_lighting` commands, then run `python -m tools.graphics.google_flow_driver run <project_id>` to submit the prompts in your own Chrome (Nano Banana model, download-time 2K capture, jitter + rate-limit backoff) and auto-save the frames into `drop_images/`, and finally ingest them safely in sequence with `google_flow_bridge ingest`.
+
+
 ### 3. Prepare A Real Audio Plan
 
 Store:
