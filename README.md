@@ -689,6 +689,18 @@ make test
 
 ---
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=calesthio%2FOpenMontage&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&legend=top-left" />
+  </picture>
+</a>
+
+---
+
 ## License
 
 [GNU AGPLv3](LICENSE)
