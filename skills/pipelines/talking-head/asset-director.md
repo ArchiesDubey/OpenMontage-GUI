@@ -12,9 +12,12 @@ You have a scene plan and script. Your job is to generate the supporting assets 
 | Prior artifacts | Scene plan, Script | What assets to create |
 | Tools | `subtitle_gen`, `audio_mixer` | Subtitle and audio generation |
 | Tools | `image_selector` (optional) | Stock images for overlays |
+| Tools | `google_flow_bridge` + `google_flow_driver` (optional) | Google Flow image path for overlay/backdrop frames — see `skills/core/google-flow.md` |
 | Tools | `pixabay_music` (optional) | Royalty-free background music |
 
 ## Process
+
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
 
 ### Step 0: Hero Scene Sample (Mandatory)
 

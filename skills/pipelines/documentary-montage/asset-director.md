@@ -114,6 +114,8 @@ No other free source has comparable depth in this style.
    broader terms. Two rewrites per slot. If still empty, flag the
    slot to the user — do not silently substitute real footage.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ## Process — Fast Path (Direct Search)
 
 Use this when producing act-by-act with user review between acts, or

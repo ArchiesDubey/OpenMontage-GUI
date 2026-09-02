@@ -57,6 +57,16 @@ illustration style, high contrast, matte paper grain.
   Continue upward; never reset.
 - **Model:** `flux_image` → `flux-pro/v1.1` at 1280×720. Validated; `image_selector`
   fallbacks are `google_imagen` / `recraft` and would re-gate with the user.
+- **Google Flow alternative (`google_flow_driver`) — opt-in only, never a silent
+  swap.** Approved when the user explicitly asks for Flow or declines FLUX spend;
+  read `skills/core/google-flow.md` and log the provider change in `decision_log`.
+  The bridge export forwards this channel's `GENERATE: ` scene prompts **verbatim**
+  — medium-first ordering and the full-bleed guard stay intact; never append
+  cinematic slash commands or `--ar`. FLUX-only disciplines that do NOT transfer:
+  the seed band (Nano Banana takes no seeds — anchor-frame reuse carries
+  continuity instead) and the $0.05/frame cost line (Flow spends the user's
+  Google AI plan credits; confirm with the user before batching). Output is 2752×1536, which
+  is *better* for crop shots than FLUX's 1280×720.
 - **Anchor-frame reuse:** hold one frame across consecutive same-location beats (E01
   held 17 beats on 8 frames). E01's anchors are topic-specific (dial / glow / bones /
   factory floor) — generate fresh for a new topic, don't force-fit them.
@@ -91,9 +101,13 @@ ElevenLabs voice above is the final cut only.
 | Cost reference | E01 $1.73 (99 s); E02 ~$8.20; E03 ~$12.0 (10.7 min, ~95 frames incl. regens + a re-cut) |
 | Budget cap | **$12.00** unless the user says otherwise |
 
-Announce provider, model, and sample-vs-batch before any paid call. Report spend at
-every gate; if a gate projects over the cap, pause and tell the user before
-generating.
+**Provider gate (binding)**: before the first image / music / TTS generation call —
+samples included — present the provider options for that capability and get explicit
+user confirmation (see `AGENT_GUIDE.md` → "Ask Before Generation Starts"). The locked
+defaults above (FLUX, the ElevenLabs voice, pixabay music) count as confirmed only
+while unchanged; any swap re-gates. Announce model and sample-vs-batch before any
+paid call. Report spend at every gate; if a gate projects over the cap, pause and
+tell the user before generating.
 
 ## 5. Pipeline
 

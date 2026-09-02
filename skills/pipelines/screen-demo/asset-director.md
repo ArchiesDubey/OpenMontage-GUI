@@ -42,6 +42,8 @@ Screen demos do not need a large asset pile. They need the right few assets:
 - optional: one intro card, one outro card, sparse diagram overlays
 - optional only if preflight allows it: generated narration for silent recordings
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Hero Scene Sample (Mandatory)
 
 Before batch asset generation:
@@ -97,6 +99,8 @@ Use `image_selector` or `diagram_gen` only for:
 - an outro card.
 
 Do not create decorative artwork for a workflow the screen already explains.
+
+**Google Flow image path (plug-n-play)**: when the user chooses Google Flow, or paid image APIs are unavailable/declined, run the `google_flow_bridge` + `google_flow_driver` loop instead of `image_selector` for those cards — **read `skills/core/google-flow.md` first** (`bridge export` → `driver dry_run` → `driver run` → `bridge ingest`; spends the user's Flow credits — confirm with the user before batching (provider gate)).
 
 ### 6. Build The Asset Manifest Cleanly
 

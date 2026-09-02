@@ -170,6 +170,27 @@ _FLOW_CAMERA_COMMANDS = {
 }
 
 
+_GENERATE_PROMPT_PREFIX = "GENERATE: "
+
+
+def scene_verbatim_prompt(scene: dict[str, Any]) -> str | None:
+    """Return the scene's playbook-authored full prompt, if it has one.
+
+    Some playbooks (e.g. ink-testimony) author the complete generation prompt
+    verbatim into the scene plan as ``required_assets[0].description`` prefixed
+    with ``GENERATE: ``. That prompt already carries the style contract
+    (medium-first ordering, the full-bleed guard), so it must be forwarded
+    untouched — no slash commands, no rewriting.
+    """
+    assets = scene.get("required_assets") or []
+    if not assets:
+        return None
+    desc = assets[0].get("description", "") if isinstance(assets[0], dict) else ""
+    if isinstance(desc, str) and desc.startswith(_GENERATE_PROMPT_PREFIX):
+        return desc[len(_GENERATE_PROMPT_PREFIX):].strip()
+    return None
+
+
 def build_google_flow_prompt(
     scene: dict[str, Any],
     style_context: dict[str, Any] | None = None,
@@ -178,18 +199,33 @@ def build_google_flow_prompt(
 ) -> str:
     """Build an image prompt tailored for Google Flow (flow.google).
 
-    Google Flow incorporates slash commands (e.g. /bokeh, /volumetric_lighting),
-    character/ingredient anchors (@CharacterName), and aspect ratio flags (--ar 16:9).
+    Three modes, resolved per scene:
+
+    1. **verbatim** — the scene plan authors the full prompt (``required_assets``
+       ``GENERATE: `` prefix); forwarded untouched. This is the style contract of
+       playbooks that own their prompt syntax (ink-testimony).
+    2. **playbook** — the style context carries an ``image_prompt_prefix`` style
+       block; the block is appended after the scene text and no Flow slash
+       commands or ``--ar`` tags are emitted (those are cinematic-photographic
+       syntax; aspect ratio is set in Flow's settings panel).
+    3. **cinematic** — slash commands (``/bokeh``, ``/volumetric_lighting``, ...)
+       plus ``--ar`` for photographic playbooks.
 
     Args:
         scene: Scene dictionary from scene_plan.
-        style_context: Optional playbook-derived style context.
+        style_context: Optional playbook-derived style context (keys:
+                       ``image_prompt_prefix``, ``image_prompt_suffix``,
+                       ``prompt_guard``, ``visual_language``, ``mood``).
         aspect_ratio: Target aspect ratio ('16:9', '9:16', '1:1', etc.).
         character_anchors: Optional mapping from character identifier to @Anchor tag.
 
     Returns:
         A Google Flow formatted prompt string.
     """
+    verbatim = scene_verbatim_prompt(scene)
+    if verbatim:
+        return verbatim
+
     sl = scene.get("shot_language", {})
     description = scene.get("description", "").strip()
 
@@ -200,7 +236,23 @@ def build_google_flow_prompt(
                 anchor_tag = f"@{anchor_tag}"
             description = description.replace(char_key, anchor_tag)
 
-    parts: list[str] = [description]
+    # Playbook style-block mode: append the playbook's verbatim style block
+    # (image_prompt_prefix is the historical key name — the block goes AFTER the
+    # scene so the medium-first sentence leads). No slash commands, no --ar.
+    style_context = style_context or {}
+    style_block = str(style_context.get("image_prompt_prefix") or "").strip()
+    if style_block:
+        parts: list[str] = [p for p in (description, ", ".join(scene.get("texture_keywords", []) or [])) if p]
+        parts.append(style_block)
+        suffix = str(style_context.get("image_prompt_suffix") or "").strip()
+        if suffix:
+            parts.append(suffix)
+        guard = str(style_context.get("prompt_guard") or "").strip()
+        if guard:
+            parts.append(guard)
+        return ". ".join(parts)
+
+    parts = [description]
 
     # Visual texture and details
     texture = scene.get("texture_keywords", [])
@@ -274,6 +326,15 @@ def build_batch_prompts(
     return results
 
 
+def flow_prompt_mode(scene: dict[str, Any], style_context: dict[str, Any] | None = None) -> str:
+    """Which of the three Google Flow prompt modes applies to this scene."""
+    if scene_verbatim_prompt(scene):
+        return "verbatim"
+    if (style_context or {}).get("image_prompt_prefix"):
+        return "playbook"
+    return "cinematic"
+
+
 def build_batch_google_flow_prompts(
     scenes: list[dict[str, Any]],
     style_context: dict[str, Any] | None = None,
@@ -306,6 +367,7 @@ def build_batch_google_flow_prompts(
             "scene_id": scene_id,
             "target_filename": target_filename,
             "prompt": flow_prompt,
+            "prompt_mode": flow_prompt_mode(scene, style_context),
             "description": scene.get("description", ""),
             "start_seconds": scene.get("start_seconds", 0.0),
             "end_seconds": scene.get("end_seconds", 0.0),

@@ -36,6 +36,7 @@ from lib.shot_prompt_builder import (
     build_google_flow_prompt,
 )
 from schemas.artifacts import validate_artifact
+from styles.playbook_loader import load_playbook
 from tools.base_tool import (
     BaseTool,
     Determinism,
@@ -133,7 +134,21 @@ class GoogleFlowBridge(BaseTool):
             },
             "style_context": {
                 "type": "object",
-                "description": "Optional style playbook context for visual tone and aesthetic hints",
+                "description": (
+                    "Optional style context. Keys honored: 'image_prompt_prefix' "
+                    "(playbook style block appended verbatim after each scene; switches "
+                    "export to playbook mode with no cinematic slash commands), "
+                    "'image_prompt_suffix', 'prompt_guard', 'visual_language', 'mood'"
+                ),
+            },
+            "style_playbook": {
+                "type": "string",
+                "description": (
+                    "Optional playbook name (e.g. 'ink-testimony'). Loads "
+                    "styles/<name>.yaml and derives the style context from its "
+                    "asset_generation.image_prompt_prefix. Defaults to the scene_plan's "
+                    "'style_playbook' field. Explicit style_context wins."
+                ),
             },
             "character_anchors": {
                 "type": "object",
@@ -212,6 +227,30 @@ class GoogleFlowBridge(BaseTool):
         style_context = inputs.get("style_context")
         character_anchors = inputs.get("character_anchors")
 
+        # Resolve the style contract for this project. Priority:
+        #   explicit style_context (agent-provided) > style_playbook input >
+        #   scene_plan['style_playbook'] > cinematic mode (no style context).
+        style_playbook_name = inputs.get("style_playbook")
+        if not style_playbook_name:
+            sp_playbook = scene_plan.get("style_playbook")
+            if isinstance(sp_playbook, str) and sp_playbook:
+                style_playbook_name = sp_playbook
+        if style_playbook_name and not (style_context or {}).get("image_prompt_prefix"):
+            try:
+                playbook = load_playbook(style_playbook_name)
+            except FileNotFoundError as e:
+                return ToolResult(
+                    success=False,
+                    error=(
+                        f"style_playbook {style_playbook_name!r} could not be loaded: {e}. "
+                        "Fix the name, or pass an explicit style_context."
+                    ),
+                )
+            prefix = (playbook.get("asset_generation") or {}).get("image_prompt_prefix")
+            if prefix:
+                style_context = {"image_prompt_prefix": prefix, "playbook": style_playbook_name,
+                                 **(style_context or {})}
+
         # Compile Google Flow prompt records
         batch_records = build_batch_google_flow_prompts(
             scenes=scenes,
@@ -262,7 +301,8 @@ class GoogleFlowBridge(BaseTool):
         with open(csv_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(
                 f,
-                fieldnames=["index", "scene_id", "target_filename", "prompt", "aspect_ratio", "description"],
+                fieldnames=["index", "scene_id", "target_filename", "prompt", "prompt_mode",
+                            "aspect_ratio", "description"],
             )
             writer.writeheader()
             for rec in batch_records:
@@ -271,6 +311,7 @@ class GoogleFlowBridge(BaseTool):
                     "scene_id": rec["scene_id"],
                     "target_filename": rec["target_filename"],
                     "prompt": rec["prompt"],
+                    "prompt_mode": rec.get("prompt_mode", "cinematic"),
                     "aspect_ratio": aspect_ratio,
                     "description": rec.get("description", ""),
                 })
@@ -284,6 +325,8 @@ class GoogleFlowBridge(BaseTool):
             data={
                 "project_id": project_id,
                 "scene_count": len(batch_records),
+                "style_playbook": style_playbook_name,
+                "prompt_modes": sorted({r.get("prompt_mode", "cinematic") for r in batch_records}),
                 "export_dir": str(export_dir.relative_to(project_dir)),
                 "markdown_file": str(md_path.relative_to(project_dir)),
                 "csv_queue_file": str(csv_path.relative_to(project_dir)),
@@ -302,6 +345,19 @@ class GoogleFlowBridge(BaseTool):
     def _render_prompts_markdown(
         self, project_id: str, records: list[dict[str, Any]], aspect_ratio: str
     ) -> str:
+        modes = sorted({rec.get("prompt_mode", "cinematic") for rec in records})
+        if modes == ["cinematic"]:
+            style_note = (
+                "> **Style mode: cinematic** — prompts carry Flow slash commands and an "
+                f"`--ar {aspect_ratio}` tag."
+            )
+        else:
+            style_note = (
+                f"> **Style mode: {'/'.join(modes)}** — prompts follow the project's playbook "
+                "style contract verbatim (medium-first ordering, full-bleed guard). Do NOT "
+                "append cinematic slash commands or --ar tags; the driver sets the aspect "
+                "ratio in Flow's settings panel."
+            )
         lines = [
             f"# Google Flow Image Generation Prompts — `{project_id}`",
             "",
@@ -312,6 +368,10 @@ class GoogleFlowBridge(BaseTool):
             "> 4. Download the generated images.",
             f"> 5. Save/move the downloaded images into `projects/{project_id}/drop_images/`.",
             f"> 6. Run ingestion: `python -m tools.graphics.google_flow_bridge ingest {project_id}`.",
+            "",
+            style_note,
+            "> Prefer the automated driver: `python -m tools.graphics.google_flow_driver run "
+            f"{project_id}` (see `skills/core/google-flow.md`).",
             "",
             "---",
             "",
@@ -679,6 +739,10 @@ def main() -> None:
     exp_parser = subparsers.add_parser("export", help="Export scene prompts for Google Flow")
     exp_parser.add_argument("project_id", help="Project ID (e.g. 'hidden-math-of-nature')")
     exp_parser.add_argument("--aspect-ratio", default="16:9", help="Aspect ratio (default: 16:9)")
+    exp_parser.add_argument(
+        "--style-playbook", default=None,
+        help="Playbook name for the style contract (e.g. 'ink-testimony'); defaults to the scene_plan's style_playbook",
+    )
     exp_parser.add_argument("--projects-root", default=None, help="Override projects root")
 
     # ingest command

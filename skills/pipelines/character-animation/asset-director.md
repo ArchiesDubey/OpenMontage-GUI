@@ -43,6 +43,8 @@ Generated backgrounds go under:
 projects/<project-name>/assets/backgrounds/
 ```
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ## Process
 
 1. Produce or source only the parts required by `rig_plan`.
@@ -50,6 +52,16 @@ projects/<project-name>/assets/backgrounds/
 3. Preserve transparent backgrounds for parts.
 4. Record prompts, seeds, providers, and model names.
 5. Build a small preview before full asset expansion.
+
+**Google Flow image path (plug-n-play)**: when the user chooses Google Flow, or paid
+image APIs are unavailable/declined, run the `google_flow_bridge` +
+`google_flow_driver` loop instead of `image_selector` — **read
+`skills/core/google-flow.md` first**. Short form: `bridge export` (style-aware
+prompts → `exports/google_flow/`) → `driver dry_run` → `driver run` (drives
+flow.google in the user's own Chrome, 2K capture, jitter + backoff; spends the
+user's Flow credits — confirm with the user before batching: provider gate) → `bridge ingest`. Transparent-background
+rig parts are NOT a Flow deliverable — use Flow only for full-bleed painted backdrops
+or props; layered parts still come from the rig pipeline.
 
 ## Quality Bar
 

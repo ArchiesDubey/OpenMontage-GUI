@@ -25,6 +25,8 @@ Use one primary path and record it clearly:
 
 Do not hide a blocked avatar path. Record it.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Sample Preview (Prevents Wasted Spend)
 
 Before batch-generating assets, produce one sample of each expensive type and show the user:
@@ -79,6 +81,7 @@ When the EP has triggered a narration-over-graphics pivot (neither `talking_head
 ### What to produce:
 1. **Narration audio** — via `tts_selector` (mandatory; block the project if no TTS is available either).
 2. **Scene visuals** — via `image_selector` or `video_selector`. One primary visual per scene that reinforces the spoken point (diagram, illustration, product shot, or stock footage).
+   **Google Flow alternative**: when the user chooses Google Flow or paid image APIs are unavailable/declined, run the `google_flow_bridge` + `google_flow_driver` loop instead — **read `skills/core/google-flow.md` first** (`bridge export` → `driver dry_run` → `driver run` → `bridge ingest`; spends the user's Flow credits — confirm with the user before batching (provider gate)).
 3. **Subtitle files** — same as standard path.
 4. **Text cards** — key-point overlays, stat cards, CTA end card.
 5. **Backgrounds** — consistent family matching the playbook.

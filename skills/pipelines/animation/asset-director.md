@@ -52,6 +52,8 @@ workspace plus a semantic or wireframe diagnostic pass. Register the editable
 workspace as `type: "3d_world"`; snapshots belong in the assets review, while
 the final MP4 belongs to compose.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Sample Preview (Prevents Wasted Spend)
 
 Before batch-generating assets, produce one sample of each expensive type and show the user:
@@ -86,6 +88,8 @@ When `animation_mode == "image_animation"`, each scene needs **2-3 images** for 
 5. **Composition JSON** — each scene gets `type: "anime_scene"` with `images: ["path/a.png", "path/b.png"]` plus camera motion, particle type, and lighting config.
 
 **Cost estimation:** 2-3 images per scene × $0.03-0.13/image depending on provider.
+
+**Google Flow image path (plug-n-play, any style)**: when the user chooses Google Flow, or paid image APIs are unavailable/declined, run the `google_flow_bridge` + `google_flow_driver` loop instead of `image_selector` — **read `skills/core/google-flow.md` first**. Short form: `bridge export` (style-aware prompts → `exports/google_flow/`) → `python -m tools.graphics.google_flow_driver dry_run <project_id>` → `run <project_id>` (drives flow.google in the user's own Chrome, 2K capture, jitter + backoff; spends the user's Flow credits — confirm with the user before batching (provider gate)) → `bridge ingest` (sequence-safe → `assets/images/` + `asset_manifest.json`). Manual fallback: user drops downloads into `drop_images/`, then `ingest`.
 
 **Reference:** See `projects/mori-no-seishin/generate_images.py` for the proven batch generation pattern.
 

@@ -25,6 +25,8 @@ Start with reusable systems:
 - CTA container,
 - diagram style.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Sample Preview (Prevents Wasted Spend)
 
 Before batch-generating support assets, produce one sample of each expensive generated type and show the user:
@@ -37,6 +39,8 @@ If rejected, adjust parameters and retry (max 3 iterations). Do not batch until 
 ### 2. Generate Only The Support Assets You Need
 
 Support assets should fill identified needs from the script and scene plan, not speculative possibilities.
+
+**Google Flow image path (plug-n-play, any style)**: when the user chooses Google Flow, or paid image APIs are unavailable/declined, run the `google_flow_bridge` + `google_flow_driver` loop instead of `image_selector` — **read `skills/core/google-flow.md` first**. Short form: `bridge export` (style-aware prompts → `exports/google_flow/`) → `python -m tools.graphics.google_flow_driver dry_run <project_id>` → `run <project_id>` (drives flow.google in the user's own Chrome, 2K capture, jitter + backoff; spends the user's Flow credits — confirm with the user before batching (provider gate)) → `bridge ingest` (sequence-safe → `assets/images/` + `asset_manifest.json`). Manual fallback: user drops downloads into `drop_images/`, then `ingest`.
 
 ### 3. Preserve Anchor Truth
 

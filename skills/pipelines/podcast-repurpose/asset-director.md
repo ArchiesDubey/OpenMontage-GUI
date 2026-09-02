@@ -24,6 +24,8 @@ Highest priority:
 - speaker attribution assets if multiple speakers appear,
 - quote-card templates for quote-led outputs.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Hero Scene Sample (Mandatory)
 
 Before batch asset generation:
@@ -41,6 +43,8 @@ Generated graphics should support the batch, not dominate it. Use them only when
 - the topic truly benefits from a clarifying image,
 - the episode companion needs chapter separation,
 - the budget can support consistent outputs.
+
+**Google Flow image path (plug-n-play, any style)**: when the user chooses Google Flow, or paid image APIs are unavailable/declined, run the `google_flow_bridge` + `google_flow_driver` loop instead of `image_selector` — **read `skills/core/google-flow.md` first**. Short form: `bridge export` (style-aware prompts → `exports/google_flow/`) → `python -m tools.graphics.google_flow_driver dry_run <project_id>` → `run <project_id>` (drives flow.google in the user's own Chrome, 2K capture, jitter + backoff; spends the user's Flow credits — confirm with the user before batching (provider gate)) → `bridge ingest` (sequence-safe → `assets/images/` + `asset_manifest.json`). Manual fallback: user drops downloads into `drop_images/`, then `ingest`.
 
 ### 3. Use Templates, Not Reinvention
 

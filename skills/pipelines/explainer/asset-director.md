@@ -66,6 +66,8 @@ Before generating anything:
    - Skip optional assets (SFX, B-roll)
 4. Get cost approval via cost tracker before proceeding
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### Step 2b: Sample Preview (Prevents Wasted Spend)
 
 Before batch-generating assets, produce one sample of each expensive asset type and present them to the user for approval:
@@ -137,12 +139,12 @@ order. When reusing prior-episode anchor frames, filter on the asset's `source =
 image model as prompts.
 
 **Google Flow Path — Human-in-the-Loop Web Studio (`google_flow_bridge` + `google_flow_driver`)**:
-When the user chooses Google Flow, or when paid generation APIs (like fal.ai) are unavailable or declined:
-1. **Export Prompts**: Call `google_flow_bridge` with `{"operation": "export", "project_id": "<project_id>", "aspect_ratio": "<aspect_ratio>"}`.
-   This translates each scene into Google Flow prompt syntax with cinematic slash commands (`/bokeh`, `/cinematic`, `/volumetric_lighting`), writes `exports/google_flow/prompts.md`, and generates `exports/google_flow/queue.csv`.
-2. **Automated Generation (`google_flow_driver`)**: Before falling back to a fully manual loop, run `python -m tools.graphics.google_flow_driver dry_run <project_id>` to verify the Flow UI selectors, then `python -m tools.graphics.google_flow_driver run <project_id>`. The driver opens flow.google in the user's own Chrome (dedicated profile, one-time login), opens a project, sets the Nano Banana image model / aspect ratio / outputs in the settings panel, submits each queued prompt with randomized jitter, and captures each finished image at 2K. Two capture modes: `--upscale fast` (default, bulk-safe — a single authenticated fetch of the native master plus a local 2× Lanczos upscale, no download manager, Chrome-crash-proof) and `--upscale flow` (clicks Flow's download flyout for Google's true in-browser SR; includes crash salvage of complete `.crdownload` files). Rate limits trigger exponential backoff. Interrupted runs resume from `exports/google_flow/driver_state.json`, and `capture <project_id>` re-fetches already-generated images without new credits. Announce to the user that the run uses their Flow account credits (the driver auto-confirms the agent's spend dialog unless `--no-auto-confirm`) and they should keep the opened window visible the first time (to complete login).
-3. **Manual Fallback**: If the driver is unavailable or the user prefers hands-on control, set the stage checkpoint to `awaiting_human`. Present the prompt checklist and instruct the user to generate the scenes at `flow.google` and drop the downloaded images into `projects/<project_id>/drop_images/`.
-4. **Sequence-Safe Ingestion**: Run `google_flow_bridge` with `{"operation": "ingest", "project_id": "<project_id>"}`. The bridge sorts by filename index or download timestamp, verifies resolution, saves `assets/images/scene_<id>.png`, generates 480px previews in `assets/_preview/`, and writes a validated `artifacts/asset_manifest.json`.
+When the user chooses Google Flow, or when paid generation APIs (like fal.ai) are unavailable or declined, use the Google Flow image-generation path. **Read `skills/core/google-flow.md` first** — it is the canonical doc for this loop. The essentials:
+
+1. **Export** (`google_flow_bridge`, `operation: "export"`) translates `scene_plan.json` into Flow prompts in `exports/google_flow/`. It is style-aware: scenes authored with a `GENERATE: ` full prompt are forwarded verbatim; playbooks with an `image_prompt_prefix` style block get that block verbatim (no cinematic slash commands); only styleless photographic scenes get `/bokeh`-style slash commands. Never hand-edit a locked style block to make a Flow prompt "work better".
+2. **Generate** (`python -m tools.graphics.google_flow_driver dry_run <project_id>`, then `run <project_id>`) drives flow.google in the user's own Chrome (dedicated profile, one-time login, spends the user's Flow credits — confirm with the user before the batch: provider gate). Default `--upscale fast` is bulk-safe and Chrome-crash-proof; `--upscale flow` gets Google's true in-browser SR for hero frames. Jitter + exponential backoff handle rate limits; interrupted runs resume from `driver_state.json`; `capture <project_id>` re-fetches generated-but-uncaptured images credit-free.
+3. **Manual Fallback**: if the driver can't run or the user prefers hands-on, set the checkpoint to `awaiting_human`, present `prompts.md`, and have the user drop downloads into `projects/<project_id>/drop_images/`.
+4. **Ingest** (`google_flow_bridge`, `operation: "ingest"`) sorts by filename index or download timestamp, verifies resolution, saves `assets/images/scene_<id>.png`, generates 480px previews in `assets/_preview/`, and writes a validated `artifacts/asset_manifest.json`.
 
 
 **Diagrams (`diagram_gen`)**:

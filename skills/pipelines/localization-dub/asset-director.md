@@ -19,6 +19,8 @@ This stage produces the localized asset kit: translated subtitle files, dubbed a
 
 Create the subtitle or caption package for each language. This gives a reviewable fallback even if dubbed-audio generation or lip sync is blocked.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Hero Scene Sample (Mandatory)
 
 Before batch asset generation:

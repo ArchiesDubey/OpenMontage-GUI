@@ -101,6 +101,18 @@ Before any paid or consequential generation call, state:
 - the reason it was chosen,
 - whether it is a sample or a batch run.
 
+### Ask Before Generation Starts (HARD RULE)
+
+For **every pipeline and every style**, before the FIRST generation call of each kind — **image generation, music/sound generation, and TTS** — the agent must **ask the user which provider to use**, not merely announce a choice:
+
+1. Present the configured providers for that capability from the registry's provider menu (for images, the Google Flow path counts as a provider option — see `skills/core/google-flow.md`).
+2. Give a one-line recommendation with the reason (style fit, cost, quality, credits).
+3. Wait for explicit user confirmation before generating. **Sample/preview calls are generation calls** — the gate applies to them too.
+4. Record the confirmed choice in `decision_log` (e.g. `category: "provider_selection"`, subject naming the kind: "Image generation provider" / "TTS provider" / "Music provider").
+5. Locked-style channels (e.g. ink-testimony's FLUX + ElevenLabs voice) count as confirmed **only while the locked provider is used unchanged**; any swap re-gates with the user.
+
+This gate is separate from sample approval: the sample confirms output *quality*; this gate confirms the *provider*. Both must pass before batching.
+
 ### Ask Before Major Changes
 
 The agent must ask the user before changing any major production choice, including:
@@ -467,7 +479,7 @@ Key capability families to look for in the output:
 
 - **tts** — Text-to-speech providers. Route via `tts_selector`.
 - **video_generation** — Video generation providers (cloud, local GPU, stock). Route via `video_selector`.
-- **image_generation** — Image generation providers (cloud, local GPU, stock). Route via `image_selector`.
+- **image_generation** — Image generation providers (cloud, local GPU, stock). Route via `image_selector`. For Google Flow (labs.google/fx) generation on the user's own Chrome, use the `google_flow_bridge` + `google_flow_driver` path — see `skills/core/google-flow.md`.
 - **music_generation** — Music and sound effect generation.
 - **video_post** — Composition, stitching, trimming (FFmpeg-based, always local).
 - **audio_processing** — Mixing, enhancement (FFmpeg-based, always local).
@@ -510,6 +522,10 @@ Three selector tools abstract multi-provider capabilities. **Selectors auto-disc
 | `video_selector` | All tools with `capability="video_generation"` | `registry.get_by_capability("video_generation")` |
 
 Selectors route based on: user preference > availability > discovery order. They adapt input schemas between providers transparently.
+
+### Google Flow Image Generation (Any Pipeline, Any Style)
+
+`google_flow_bridge` + `google_flow_driver` form a plug-n-play image-generation path that works for any registered pipeline or style playbook: `bridge export` (style-aware prompts — verbatim `GENERATE:` prompts and playbook style blocks are preserved untouched; only styleless photographic scenes get cinematic slash commands) → `google_flow_driver dry_run` (no credits) → `google_flow_driver run` (drives flow.google in the user's own Chrome, 2K capture, jitter + exponential backoff, resumable) → `bridge ingest` (sequence-safe → `assets/images/` + `asset_manifest.json`). **Read `skills/core/google-flow.md` before running it.** Security: the user never shares credentials in chat — login happens once in the driver's dedicated Chrome profile; the run spends the user's Flow credits — confirm with the user before batching (provider gate). These tools register under their own capability names, so `image_selector` never auto-routes to them — switching a project to this path is always an explicit, announced decision.
 
 ## User-Facing Planning Protocol
 

@@ -215,6 +215,29 @@
             "transition_duration_seconds": {
               "type": "number",
               "minimum": 0.1
+            },
+            "min_shot_hold_seconds": {
+              "type": "number",
+              "minimum": 0.5
+            },
+            "max_shot_hold_seconds": {
+              "type": "number",
+              "minimum": 1
+            },
+            "typical_shot_hold_seconds": {
+              "type": "number",
+              "minimum": 1
+            },
+            "deliberate_hold_seconds": {
+              "type": "number",
+              "minimum": 1
+            },
+            "date_card_hold_seconds": {
+              "type": "number",
+              "minimum": 1
+            },
+            "shots_per_10min": {
+              "type": "string"
             }
           },
           "additionalProperties": false
@@ -297,7 +320,7 @@
         },
         "peopled_style": {
           "type": "string",
-          "description": "Style block for narrative scenes whose subjects are other human beings (witnesses, workers, a courtroom, a crowd). Carries the palette and painterly treatment but NO recurring-character clause — a character prefix applied to a peopled scene competes with the scene's own people and converts them into copies of the character."
+          "description": "Style block for narrative scenes whose subjects are other human beings (witnesses, workers, a courtroom, a crowd). Carries the palette and painterly treatment but NO recurring-character clause \u2014 a character prefix applied to a peopled scene competes with the scene's own people and converts them into copies of the character."
         },
         "scene_type": {
           "type": "string",
@@ -335,13 +358,27 @@
       "description": "Per-overlay styling. Covers the in-scene overlay boxes plus the timed overlay types the Explainer composition renders (see remotion-composer/src/Explainer.tsx, `Overlay.type`).",
       "type": "object",
       "properties": {
-        "stat_card": { "$ref": "#/$defs/overlay_style" },
-        "key_term": { "$ref": "#/$defs/overlay_style" },
-        "code_block": { "$ref": "#/$defs/overlay_style" },
-        "section_title": { "$ref": "#/$defs/overlay_style" },
-        "stat_reveal": { "$ref": "#/$defs/overlay_style" },
-        "hero_title": { "$ref": "#/$defs/overlay_style" },
-        "provider_chip": { "$ref": "#/$defs/overlay_style" }
+        "stat_card": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "key_term": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "code_block": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "section_title": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "stat_reveal": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "hero_title": {
+          "$ref": "#/$defs/overlay_style"
+        },
+        "provider_chip": {
+          "$ref": "#/$defs/overlay_style"
+        }
       },
       "additionalProperties": false
     },
@@ -457,12 +494,24 @@
     "overlay_style": {
       "type": "object",
       "properties": {
-        "bg": { "type": "string" },
-        "border": { "type": "string" },
-        "text": { "type": "string" },
-        "radius": { "type": "number" },
-        "shadow": { "type": "string" },
-        "highlight": { "type": "string" },
+        "bg": {
+          "type": "string"
+        },
+        "border": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "radius": {
+          "type": "number"
+        },
+        "shadow": {
+          "type": "string"
+        },
+        "highlight": {
+          "type": "string"
+        },
         "accent": {
           "type": "string",
           "description": "Accent color for overlay types that render one (maps to the renderer's accentColor prop)."

@@ -63,6 +63,8 @@ If `proposal_packet.metadata.motion_required = true`, actual moving footage or g
 - stills may not replace the planned motion shots,
 - a still-image teaser is not an acceptable fallback unless the user explicitly approves an animatic.
 
+**Provider gate (binding — `AGENT_GUIDE.md` → "Ask Before Generation Starts")**: before the first **image / music / sound / TTS** generation call of the run — **samples included** — present the configured providers for that capability (registry `provider_menu()`; for images the Google Flow path is one of the options) with a one-line recommendation and get explicit user confirmation. Log the confirmed choice in `decision_log`. Locked-style defaults count as confirmed only while unchanged.
+
 ### 1b. Sample Preview (Prevents Wasted Spend)
 
 Before batch-generating support assets, produce one sample of each expensive generated type and show the user:
@@ -95,7 +97,7 @@ Optional generated assets should fill clear gaps:
 
 For motion-required jobs, use `video_selector` first for generated shots. `image_selector` may support look development, concept frames, or embedded design layers, but it does not satisfy the motion requirement by itself.
 
-When producing still plates, look-dev frames, or concept art in **Google Flow** (flow.google), use `google_flow_bridge` to export prompts (`exports/google_flow/prompts.md` and `queue.csv`) with `/cinematic`, `/bokeh`, and `/dramatic_lighting` commands, then run `python -m tools.graphics.google_flow_driver run <project_id>` to submit the prompts in your own Chrome (Nano Banana model, download-time 2K capture, jitter + rate-limit backoff) and auto-save the frames into `drop_images/`, and finally ingest them safely in sequence with `google_flow_bridge ingest`.
+When producing still plates, look-dev frames, or concept art in **Google Flow** (flow.google), use the Google Flow path — **read `skills/core/google-flow.md` first** (canonical loop, capture modes, style rules). Short form: `google_flow_bridge` `operation: "export"` writes the prompt queue (`exports/google_flow/prompts.md`, `queue.csv`) — style-aware, so cinematic scenes carry `/cinematic`, `/bokeh`, `/dramatic_lighting` commands while playbook-styled scenes keep their own verbatim style contract — then `python -m tools.graphics.google_flow_driver dry_run <project_id>` and `run <project_id>` submit them in the user's own Chrome (Nano Banana model, 2K capture, jitter + rate-limit backoff; spends the user's Flow credits — confirm with the user before batching (provider gate)) and auto-save frames into `drop_images/`; finish with `google_flow_bridge` `operation: "ingest"` for sequence-safe mapping into `assets/images/` + `asset_manifest.json`.
 
 
 ### 3. Prepare A Real Audio Plan

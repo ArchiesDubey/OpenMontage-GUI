@@ -76,7 +76,10 @@ def test_registry_discovery():
     assert tool.runtime == "local"
 
 
-def test_export_prompts(mock_project):
+def test_export_prompts_playbook_mode(mock_project):
+    """scene_plan declares style_playbook 'clean-professional' -> playbook mode:
+    the playbook's image_prompt_prefix style block is appended verbatim and no
+    cinematic slash commands / --ar tags are emitted."""
     project_dir, project_id, projects_root = mock_project
     bridge = GoogleFlowBridge()
 
@@ -90,6 +93,8 @@ def test_export_prompts(mock_project):
     assert result.success is True
     data = result.data
     assert data["scene_count"] == 2  # scene-trans skipped as transition
+    assert data["style_playbook"] == "clean-professional"
+    assert data["prompt_modes"] == ["playbook"]
 
     export_dir = project_dir / "exports" / "google_flow"
     assert export_dir.is_dir()
@@ -100,10 +105,10 @@ def test_export_prompts(mock_project):
     md_text = md_file.read_text(encoding="utf-8")
     assert "Scene [01] `scene-1`" in md_text
     assert "Scene [02] `scene-2`" in md_text
-    assert "/bokeh" in md_text
-    assert "/golden_hour" in md_text
-    assert "/neon" in md_text
-    assert "--ar 16:9" in md_text
+    assert "Style mode: playbook" in md_text
+    assert "clean professional flat illustration" in md_text
+    assert "/bokeh" not in md_text
+    assert "--ar 16:9" not in md_text
     assert "01_scene-1.png" in md_text
     assert "02_scene-2.png" in md_text
 
@@ -116,7 +121,9 @@ def test_export_prompts(mock_project):
         assert reader[0]["index"] == "1"
         assert reader[0]["scene_id"] == "scene-1"
         assert reader[0]["target_filename"] == "01_scene-1.png"
-        assert "/bokeh" in reader[0]["prompt"]
+        assert reader[0]["prompt_mode"] == "playbook"
+        assert "clean professional flat illustration" in reader[0]["prompt"]
+        assert "/bokeh" not in reader[0]["prompt"]
         assert reader[1]["index"] == "2"
         assert reader[1]["scene_id"] == "scene-2"
 
@@ -125,10 +132,113 @@ def test_export_prompts(mock_project):
     assert json_file.is_file()
     json_data = json.loads(json_file.read_text(encoding="utf-8"))
     assert len(json_data) == 2
+    assert all(rec["prompt_mode"] == "playbook" for rec in json_data)
 
     # Verify drop_images README
     drop_readme = project_dir / "drop_images" / "README.md"
     assert drop_readme.is_file()
+
+
+def test_export_prompts_cinematic_mode(mock_project):
+    """No style playbook anywhere -> legacy cinematic slash-command prompts."""
+    project_dir, project_id, projects_root = mock_project
+    # Strip the declared playbook so nothing resolves to playbook mode
+    sp_path = project_dir / "artifacts" / "scene_plan.json"
+    scene_plan = json.loads(sp_path.read_text(encoding="utf-8"))
+    del scene_plan["style_playbook"]
+    sp_path.write_text(json.dumps(scene_plan, indent=2), encoding="utf-8")
+
+    bridge = GoogleFlowBridge()
+    result = bridge.execute({
+        "operation": "export",
+        "project_id": project_id,
+        "projects_root": str(projects_root),
+        "aspect_ratio": "16:9",
+    })
+
+    assert result.success is True
+    assert result.data["prompt_modes"] == ["cinematic"]
+
+    md_text = (project_dir / "exports" / "google_flow" / "prompts.md").read_text(encoding="utf-8")
+    assert "Style mode: cinematic" in md_text
+    assert "/bokeh" in md_text
+    assert "/golden_hour" in md_text
+    assert "/neon" in md_text
+    assert "--ar 16:9" in md_text
+
+
+def test_export_prompts_verbatim_generate_prompts(mock_project):
+    """Scenes authored with 'GENERATE: ' full prompts are forwarded untouched."""
+    project_dir, project_id, projects_root = mock_project
+    sp_path = project_dir / "artifacts" / "scene_plan.json"
+    scene_plan = json.loads(sp_path.read_text(encoding="utf-8"))
+    ink_prompt = (
+        "Pen-and-ink illustration with soft gray brush washes on warm white paper: "
+        "A radium dial glows in a dark factory. Historical narrative illustration in "
+        "black-and-white pen-and-ink with soft gray brush washes on warm white paper. "
+        "No text or numbers anywhere. Full-bleed image, no border, no plate frame, no label."
+    )
+    scene_plan["scenes"][0]["required_assets"] = [
+        {"type": "image", "description": f"GENERATE: {ink_prompt}", "source": "generate"}
+    ]
+    sp_path.write_text(json.dumps(scene_plan, indent=2), encoding="utf-8")
+
+    bridge = GoogleFlowBridge()
+    result = bridge.execute({
+        "operation": "export",
+        "project_id": project_id,
+        "projects_root": str(projects_root),
+        "aspect_ratio": "16:9",
+    })
+
+    assert result.success is True
+    assert result.data["prompt_modes"] == ["playbook", "verbatim"]  # sorted; scene-1 verbatim, scene-2 playbook
+
+    json_data = json.loads(
+        (project_dir / "exports" / "google_flow" / "queue.json").read_text(encoding="utf-8")
+    )
+    assert json_data[0]["prompt_mode"] == "verbatim"
+    assert json_data[0]["prompt"] == ink_prompt
+    assert "/bokeh" not in json_data[0]["prompt"]
+    assert "--ar" not in json_data[0]["prompt"]
+
+
+def test_export_prompts_explicit_style_context_wins(mock_project):
+    """An explicit style_context overrides the scene_plan's declared playbook."""
+    project_dir, project_id, projects_root = mock_project
+    bridge = GoogleFlowBridge()
+    result = bridge.execute({
+        "operation": "export",
+        "project_id": project_id,
+        "projects_root": str(projects_root),
+        "aspect_ratio": "16:9",
+        "style_context": {
+            "image_prompt_prefix": "CUSTOM STYLE BLOCK",
+            "prompt_guard": "GUARD SENTENCE.",
+        },
+    })
+
+    assert result.success is True
+    assert result.data["style_playbook"] == "clean-professional"  # reported, but not applied
+    json_data = json.loads(
+        (project_dir / "exports" / "google_flow" / "queue.json").read_text(encoding="utf-8")
+    )
+    assert "CUSTOM STYLE BLOCK" in json_data[0]["prompt"]
+    assert "GUARD SENTENCE." in json_data[0]["prompt"]
+    assert "clean professional flat illustration" not in json_data[0]["prompt"]
+
+
+def test_export_prompts_unknown_playbook_fails_loudly(mock_project):
+    project_dir, project_id, projects_root = mock_project
+    bridge = GoogleFlowBridge()
+    result = bridge.execute({
+        "operation": "export",
+        "project_id": project_id,
+        "projects_root": str(projects_root),
+        "style_playbook": "no-such-playbook-xyz",
+    })
+    assert result.success is False
+    assert "no-such-playbook-xyz" in (result.error or "")
 
 
 def test_ingest_images_by_name_prefix(mock_project):
