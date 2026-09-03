@@ -15,6 +15,8 @@ The script is the backbone of the video. Every visual, every scene, every audio 
 | Prior artifact | `research_brief` (optional but high-value) | Data points, audience insights, expert quotes — ground the script in real facts |
 | Playbook | Active style playbook from `proposal_packet.selected_concept.suggested_playbook` | Voice style, pacing rules |
 | Meta skill | `skills/meta/voice-performance-director.md` | Structured TTS delivery cues for natural, expressive narration |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop editing pass for human-sounding narration |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés, binary contrasts, and robotic cadence |
 | Layer 3 | TTS provider skills (check `agent_skills` on the selected TTS tool) | TTS capabilities for speaker directions |
 
 ## Process
@@ -175,7 +177,19 @@ For technical terms, acronyms, and non-English words:
 {"word": "cosine", "phonetic": "CO-sign"}
 ```
 
-### Step 5: Validate Against Playbook
+### Step 5: Run the Mandatory Anti-AI-Slop Humanizing Pass (`/no-ai-slop`)
+
+Before locking text, run the draft through the `/no-ai-slop` editing pass (`skills/meta/no-ai-slop.md` + `.agents/skills/no-ai-slop/SKILL.md`):
+
+1. **Strip all banned AI words:** Check for and remove *delve, tapestry, robust, streamline, leverage, utilize, facilitate, empower, cutting-edge, game-changer, paradigm shift, pivotal, beacon, realm, multifaceted, intricate, transformative, elevate, supercharge, harness, ever-evolving*.
+2. **Eliminate binary contrasts:** Convert *"This is not X, it's Y"* or *"The question isn't X, it's Y"* into direct assertions of Y.
+3. **Delete throat-clearing openers:** Cut *"Here's the thing"*, *"Let me be clear"*, *"The truth is"*, *"What most people get wrong"*.
+4. **Remove trailing `-ing` superficial analysis:** Delete trailing clauses like *, highlighting its importance* or *, underscoring why it matters*. Show the proof or result instead.
+5. **Strip em dashes (`—`) from spoken copy:** Never send em dashes to TTS. They cause arbitrary glottal stops or extended pauses. Use periods, commas, or explicit SSML `<break>` tags.
+6. **Apply the Portability Test:** If a sentence could describe any competing tool, framework, or topic unchanged, it is filler. Cut it or ground it in specific facts from `research_brief`.
+7. **Read-Aloud Test:** Read the narration aloud. If it sounds like a corporate marketing video or an AI chatbot, rewrite it in natural spoken language.
+
+### Step 6: Validate Against Playbook
 
 Read the active style playbook and verify:
 
@@ -187,16 +201,17 @@ Read the active style playbook and verify:
 | `motion.pacing_rules` | E.g., "hold establishing shots for 2s minimum" affects section timing |
 | `identity.mood` | Word choice: `warm` uses casual language; `professional` uses precise language |
 
-### Step 6: Self-Evaluate
+### Step 7: Self-Evaluate
 
 Score your script (1-5):
 
 | Criterion | Question |
 |-----------|----------|
-| **Hook power** | Would someone stop scrolling in the first 3 seconds? |
+| **Hook power** | Would someone stop scrolling in the first 3 seconds without throat-clearing? |
 | **Word count accuracy** | Within ±10% of target for the duration? |
 | **Narrative flow** | Does each section build on the last? "Therefore/but" not "and then"? |
 | **Enhancement density** | At least one cue every 8-10 seconds? |
+| **No-AI-slop compliance** | Zero banned AI words, zero binary contrasts, zero em dashes, passes portability test? |
 | **Voice performance** | Are pauses, emphasis, pace, and sample section explicit? |
 | **Jargon management** | Technical terms explained or have pronunciation guides? |
 | **Climax payoff** | Does the aha moment deliver on the hook's promise? |
@@ -204,7 +219,7 @@ Score your script (1-5):
 
 If any dimension scores below 3, revise before submitting.
 
-### Step 7: Submit
+### Step 8: Submit
 
 Validate `script_json` against the canonical script schema, persist it through
 the checkpoint protocol, and attach the stage review. There is no separate
@@ -225,6 +240,7 @@ add the source. Do not invent statistics, dates, or attributions.
 
 - **Writing too many words**: The #1 failure. TTS pacing is fixed. If you write 250 words for a 60-second video, either the audio will be rushed or the video will be 100 seconds. Count your words.
 - **Front-loading information**: The hook should create curiosity, not dump information. "HTTPS uses TLS 1.3 with AEAD ciphers" is a terrible opening. "The padlock icon doesn't mean what you think it means" is compelling.
+- **Leaving AI slop in narration**: Binary contrasts, throat-clearing, and em dashes make TTS voiceovers sound robotic. Run `/no-ai-slop` before finalizing.
 - **Missing enhancement cues**: A script without visual direction is a podcast script. Every section needs at least one cue telling the visual team what to show.
 - **Generic speaker directions**: "Read naturally" is useless. "Start measured and precise, then accelerate through the list to convey scale" is actionable.
 - **Forgetting the audience**: A script for CTOs should use different words than one for high schoolers, even if covering the same concept.
@@ -236,10 +252,10 @@ add the source. Do not invent statistics, dates, or attributions.
 {
   "id": "s3",
   "label": "The Core Idea",
-  "text": "Instead of matching keywords, vector databases convert everything — text, images, audio — into lists of numbers called embeddings. Similar things get similar numbers. So finding related content becomes a math problem: which numbers are closest?",
+  "text": "Vector databases search by meaning rather than keywords. They convert text, images, and audio into lists of numbers called embeddings. Related items receive similar coordinates. Finding relevant content becomes a geometric calculation: which vectors are closest in space?",
   "start_seconds": 15,
   "end_seconds": 28,
-  "speaker_directions": "Measured pace through 'text, images, audio' with slight pause between each. Speed up slightly on 'similar things get similar numbers' — it should feel like a revelation. Brief pause before the final question.",
+  "speaker_directions": "Measured pace through 'text, images, and audio' with slight pause between each. Build curiosity into 'related items receive similar coordinates'. Brief pause before the final question.",
   "enhancement_cues": [
     {
       "type": "animation",
@@ -248,7 +264,7 @@ add the source. Do not invent statistics, dates, or attributions.
     },
     {
       "type": "stat_card",
-      "description": "Display: 'Everything becomes numbers. Similar things → similar numbers.'",
+      "description": "Display: 'Everything becomes numbers. Similar things -> similar numbers.'",
       "timestamp_seconds": 22
     }
   ],

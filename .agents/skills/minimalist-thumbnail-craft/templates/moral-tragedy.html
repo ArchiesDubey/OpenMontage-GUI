@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Archetype 3: Moral Tragedy (WHY?)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      background: #8DA1B1; /* Factory Grey-Blue */
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+    }
+
+    /* Overhead Factory Fluorescent Lights */
+    .light-bar {
+      position: absolute;
+      top: 0;
+      width: 280px;
+      height: 35px;
+      background: #4A5568;
+      border-bottom: 8px solid #E2E8F0;
+      box-shadow: 0 10px 40px rgba(255,255,255,0.4);
+    }
+    .light-left { left: 80px; }
+    .light-right { right: 80px; }
+
+    /* Punch Headline Text */
+    .headline {
+      position: absolute;
+      top: 25px;
+      left: 42%;
+      transform: translateX(-50%);
+      font-size: 190px;
+      font-weight: 900;
+      color: #FFEE00;
+      text-transform: uppercase;
+      letter-spacing: -4px;
+      -webkit-text-stroke: 20px #121212;
+      paint-order: stroke fill;
+      filter: drop-shadow(0 16px 0 #121212);
+      z-index: 50;
+      line-height: 1;
+    }
+
+    /* Factory Stage */
+    .factory-stage {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 1280px;
+      height: 600px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Factory Lights -->
+  <div class="light-bar light-left"></div>
+  <div class="light-bar light-right"></div>
+
+  <!-- Giant Punch Headline -->
+  <div class="headline">WHY?</div>
+
+  <!-- Factory Scene SVG -->
+  <svg class="factory-stage" viewBox="0 0 1280 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Industrial Machinery & Shelves -->
+    <rect x="250" y="80" width="300" height="220" fill="#CBD5E1" stroke="#121212" stroke-width="7" />
+    <rect x="270" y="100" width="110" height="70" fill="#64748B" stroke="#121212" stroke-width="5" />
+    <rect x="410" y="100" width="110" height="70" fill="#64748B" stroke="#121212" stroke-width="5" />
+    
+    <!-- Conveyor Belt -->
+    <rect x="0" y="240" width="750" height="40" fill="#475569" stroke="#121212" stroke-width="7" />
+    <!-- Conveyor rollers -->
+    <circle cx="100" cy="260" r="12" fill="#94A3B8" stroke="#121212" stroke-width="4" />
+    <circle cx="250" cy="260" r="12" fill="#94A3B8" stroke="#121212" stroke-width="4" />
+    <circle cx="400" cy="260" r="12" fill="#94A3B8" stroke="#121212" stroke-width="4" />
+    <circle cx="550" cy="260" r="12" fill="#94A3B8" stroke="#121212" stroke-width="4" />
+
+    <!-- Sorting Trays -->
+    <rect x="480" y="320" width="220" height="280" fill="#334155" stroke="#121212" stroke-width="7" />
+    <line x1="480" y1="360" x2="700" y2="360" stroke="#121212" stroke-width="5" />
+    <line x1="480" y1="400" x2="700" y2="400" stroke="#121212" stroke-width="5" />
+
+    <!-- Crowded Tray of Cute Yellow Chicks (Left) -->
+    <g id="chicks-group">
+      <!-- Chick 1 -->
+      <circle cx="90" cy="400" r="42" fill="#FFDF00" stroke="#121212" stroke-width="6" />
+      <circle cx="105" cy="385" r="7" fill="#121212" />
+      <polygon points="125,395 140,400 125,408" fill="#F97316" stroke="#121212" stroke-width="4" />
+
+      <!-- Chick 2 -->
+      <circle cx="170" cy="440" r="44" fill="#FFDF00" stroke="#121212" stroke-width="6" />
+      <circle cx="190" cy="425" r="8" fill="#121212" />
+      <polygon points="210,435 225,440 210,448" fill="#F97316" stroke="#121212" stroke-width="4" />
+
+      <!-- Chick 3 -->
+      <circle cx="250" cy="410" r="42" fill="#FFDF00" stroke="#121212" stroke-width="6" />
+      <circle cx="270" cy="395" r="7" fill="#121212" />
+      <polygon points="290,405 305,410 290,418" fill="#F97316" stroke="#121212" stroke-width="4" />
+
+      <!-- Chick 4 (Looking sad toward worker) -->
+      <circle cx="340" cy="440" r="46" fill="#FFDF00" stroke="#121212" stroke-width="6" />
+      <ellipse cx="360" cy="425" rx="10" ry="14" fill="#FFFFFF" stroke="#121212" stroke-width="4" />
+      <circle cx="362" cy="425" r="6" fill="#121212" />
+      <polygon points="385,435 402,440 385,448" fill="#F97316" stroke="#121212" stroke-width="4" />
+      <!-- Sad droop eyebrow -->
+      <path d="M 345 408 Q 365 415 375 410" stroke="#121212" stroke-width="4" stroke-linecap="round" fill="none" />
+    </g>
+
+    <!-- Factory Worker Character (Right) -->
+    <!-- Torso (Beige jumpsuit) -->
+    <path d="M 850 300 L 980 270 L 1080 600 L 800 600 Z" fill="#D2B48C" stroke="#121212" stroke-width="8" />
+    <!-- Collar -->
+    <polygon points="900,300 930,340 960,300" fill="#C19A6B" stroke="#121212" stroke-width="5" />
+
+    <!-- Worker Head (Pure White Egghead) -->
+    <ellipse cx="880" cy="190" rx="90" ry="85" fill="#FFFFFF" stroke="#121212" stroke-width="8" />
+
+    <!-- Worker Cap (Beige) -->
+    <path d="M 780 170 Q 820 100 960 140 L 970 175 Q 890 150 780 170 Z" fill="#C19A6B" stroke="#121212" stroke-width="6" />
+    <path d="M 760 175 Q 820 170 870 185" stroke="#121212" stroke-width="7" fill="none" /> <!-- Cap bill -->
+
+    <!-- Worker Neutral / Reluctant Face -->
+    <circle cx="830" cy="200" r="7" fill="#121212" />
+    <circle cx="890" cy="200" r="7" fill="#121212" />
+    <!-- Flat, regretful mouth line -->
+    <line x1="835" y1="235" x2="885" y2="235" stroke="#121212" stroke-width="6" stroke-linecap="round" />
+    <!-- Slightly worried straight eyebrows -->
+    <line x1="820" y1="185" x2="845" y2="188" stroke="#121212" stroke-width="5" stroke-linecap="round" />
+    <line x1="880" y1="188" x2="905" y2="185" stroke="#121212" stroke-width="5" stroke-linecap="round" />
+
+    <!-- Worker Arm holding the helpless chick -->
+    <polyline points="850,340 760,400 740,430" stroke="#121212" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Helpless Chick in worker's hand -->
+    <circle cx="720" cy="420" r="48" fill="#FFDF00" stroke="#121212" stroke-width="6" />
+    <!-- Huge innocent terrified eyes -->
+    <circle cx="695" cy="405" r="16" fill="#FFFFFF" stroke="#121212" stroke-width="4" />
+    <circle cx="698" cy="405" r="8" fill="#121212" />
+    <circle cx="735" cy="405" r="16" fill="#FFFFFF" stroke="#121212" stroke-width="4" />
+    <circle cx="732" cy="405" r="8" fill="#121212" />
+    <!-- Beak open in chirp -->
+    <polygon points="710,422 720,432 730,422" fill="#F97316" stroke="#121212" stroke-width="4" />
+    <!-- Worried eyebrows -->
+    <path d="M 685 385 Q 700 375 710 385" stroke="#121212" stroke-width="4" fill="none" stroke-linecap="round" />
+    <path d="M 720 385 Q 730 375 745 385" stroke="#121212" stroke-width="4" fill="none" stroke-linecap="round" />
+  </svg>
+
+</body>
+</html>

@@ -92,6 +92,12 @@ CHECK: Spoken copy quality
 
 CHECK: Duration fit
   - Word count aligns with natural speaking pace (~140-160 WPM for spokesperson)
+
+CHECK: Anti-AI-slop compliance (/no-ai-slop)
+  - Scan spoken text for banned AI words (delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, pivotal)
+  - Check for binary contrasts ("not X, but Y") and throat-clearing openers ("Here's the thing")
+  - Check for em dashes ('—') in spoken text (disrupts avatar lip-sync rhythm)
+  - If violations found: REVISE script per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

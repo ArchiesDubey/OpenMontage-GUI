@@ -8,6 +8,8 @@ Turn the approved localization brief into a transcript-backed, reviewable script
 
 - `docs/localization-dubbing-best-practices.md`
 - `skills/creative/storytelling.md`
+- `skills/meta/no-ai-slop.md`
+- `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`)
 
 ## Process
 
@@ -25,11 +27,20 @@ Start with the source transcript and fix obvious errors in:
 
 For each target language, generate text that can be reviewed before synthesis. Record where terms should remain unchanged.
 
-### 3. Preserve Structure Where Practical
+### 3. Translate For Natural Spoken Flow, Not Machine Slop (`/no-ai-slop`)
+
+Machine translation and LLM localization frequently inject robotic clichés, passive constructions, and unnatural syntax:
+- Run `/no-ai-slop` principles (`skills/meta/no-ai-slop.md`) adapted to the target language.
+- Ensure phrasing is idiomatic spoken language, not literal word-for-word translation.
+- Eliminate binary contrasts (*"not X, but Y"*) and throat-clearing openers.
+- Strip em dashes (`—`) to prevent unnatural pauses or cadence breakage in the target TTS voice.
+- Verify timing fits naturally into the section window without rushing or dragging.
+
+### 4. Preserve Structure Where Practical
 
 Keep section timing and sequence aligned to the source unless the translation clearly needs a different pacing strategy.
 
-### 4. Use Metadata For Localization Control
+### 5. Use Metadata For Localization Control
 
 Recommended metadata keys:
 
@@ -40,10 +51,11 @@ Recommended metadata keys:
 - `pronunciation_notes`
 - `review_status_by_language`
 
-### 5. Quality Gate
+### 6. Quality Gate
 
 - the source transcript is strong enough to trust,
 - target-language copy exists for every planned deliverable,
+- translated copy sounds natural and human, free of machine-translation slop and awkward cadence,
 - glossary terms are preserved,
 - the script package can be reviewed before audio generation.
 

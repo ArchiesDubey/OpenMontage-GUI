@@ -258,6 +258,16 @@ CHECK: Mathematical accuracy (if applicable)
   - Does the script's explanation match the research brief's accuracy notes?
   - Are any simplifications technically defensible?
   - If inaccurate: REVISE script with specific correction from research
+
+CHECK: Anti-AI-slop compliance (/no-ai-slop)
+  - Scan narration and on-screen copy for banned AI words:
+      delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal
+  - If banned words found:
+      REVISE script: "Banned AI word '{word}' found in section {id}. Rewrite with plain English per skills/meta/no-ai-slop.md."
+  - Check for binary contrasts ("This is not X, it's Y") and throat-clearing openers ("Here's the thing"):
+      If found: REVISE script: "AI slop pattern in section {id}. State claim directly."
+  - Check for em dashes ('—') in TTS narration:
+      If found: REVISE script: "Em dash in section {id} narration breaks TTS prosody. Replace with period or comma."
 ```
 
 ### After SCENE_PLAN stage:

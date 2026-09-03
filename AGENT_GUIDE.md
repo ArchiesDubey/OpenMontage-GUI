@@ -574,11 +574,23 @@ Each stage produces one canonical artifact that becomes the contract for the nex
 | Stage | Director Skill | Canonical output | Core quality bar |
 |------|---------------|------------------|------------------|
 | `idea` | `*-director.md` | `brief` | Clear hook, target platform, duration, tone, and user intent |
-| `script` | `*-director.md` | `script` | Structured sections, valid timing, coherent narration |
+| `script` | `*-director.md` | `script` | Structured sections, valid timing, coherent narration, mandatory anti-AI-slop pass via `/no-ai-slop` |
 | `scene_plan` | `*-director.md` | `scene_plan` | Ordered scenes, timings, asset requirements |
 | `assets` | `*-director.md` | `asset_manifest` | Provenance, paths, model/tool metadata, scene linkage |
 | `edit` | `*-director.md` | `edit_decisions` | Concrete cuts, overlays, subtitle/music decisions |
 | `compose` | `*-director.md` | `render_report` | Output paths, encoding profile, verification notes |
+
+### Script Quality & Anti-AI-Slop Contract (HARD RULE)
+
+Every script authored by AI must sound like a real human, not a chatbot. Left unedited, LLM-generated scripts exhibit robotic AI tics that sound jarring when spoken by TTS or an actor.
+
+Before any `script` checkpoint is written or presented for human review:
+1. **Mandatory `/no-ai-slop` pass:** The agent must execute the anti-AI-slop editing workflow (`skills/meta/no-ai-slop.md` + `.agents/skills/no-ai-slop/SKILL.md`).
+2. **Zero banned AI words:** Words such as *delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal, multifaceted, ever-evolving* are forbidden.
+3. **Zero binary contrasts:** Avoid *"This is not X, it's Y"* or *"The question isn't X, it's Y"*. State the point directly.
+4. **Zero throat-clearing openers:** Cut *"Here's the thing"*, *"Let me be clear"*, *"The truth is"*.
+5. **Zero em-dash cadence crutches in narration:** Do not use `—` in spoken text sent to TTS. Em dashes break TTS prosody; use periods, commas, or structured SSML breaks instead.
+6. **Passes the portability test:** If a sentence could be dropped into another company's video unchanged, cut it or ground it in specific facts from research.
 
 Stage contract rules:
 
@@ -701,6 +713,7 @@ The `.agents/skills/` directory is large. When you're not coming in through a to
 | **Image generation** | `bfl-api`, `flux-best-practices` |
 | **Video generation** | `seedance-2-0` (preferred premium default — cinematic, trailer, multi-shot, synced audio, lip-sync), `gemini-omni` (conversational video editing, reference tags, timecoded beats), `ai-video-gen`, `ltx2` |
 | **Audio** | `elevenlabs`, `music`, `sound-effects`, `acestep`, `text-to-speech`, `azure-text-to-speech` (optional cloud TTS — tool `azure_tts`, same Speech key as `azure_stt`), `setup-api-key` |
+| **Scriptwriting & prose** | `no-ai-slop` (primary anti-slop editor; eliminates AI jargon, binary contrasts, and robotic cadence; slash command `/no-ai-slop`), `humanizer` |
 | **Speech-to-text** | `speech-to-text` (whisper `transcriber` — default, offline), `azure-speech-to-text` (optional cloud STT — tool `azure_stt`, preferred when `AZURE_SPEECH_KEY` is set) |
 | **Avatar / lip-sync** | `avatar-video`, `heygen`, `create-video`, `faceswap`, `video-translate`, `agents` |
 | **Capture** | `playwright-recording` (browser flows), `ffmpeg` (post) |

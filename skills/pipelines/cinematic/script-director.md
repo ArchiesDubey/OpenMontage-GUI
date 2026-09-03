@@ -10,6 +10,8 @@ This stage builds the beat map, selected lines, title-card copy, and reveal stru
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifact | `state.artifacts["proposal"]["proposal_packet"]` | Emotional arc and source truth |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop editing pass |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and hollow puffery |
 | Tools | `transcriber`, `scene_detect` | Optional dialogue mining and source review |
 
 ## Process
@@ -45,7 +47,16 @@ Title-card copy should feel trailer-like:
 - more whitespace,
 - more timing precision.
 
-### 4. Store Beat Truth In Metadata
+### 4. Run the Anti-AI-Slop Pass on Voiceover and Cards (`/no-ai-slop`)
+
+Cinematic trailers and teasers fail quickly when burdened with empty AI puffery:
+- Strip importance puffery (*"stands as a testament"*, *"a pivotal moment in history"*).
+- Strip banned AI buzzwords (*cutting-edge, robust, transformative, elevate, realm, beacon*).
+- Eliminate binary contrasts (*"not just a story, but a warning"*).
+- Eliminate fake-profound kicker lines; let the final visual or concrete date/claim carry the impact.
+- Strip em dashes (`—`) in spoken voiceover.
+
+### 5. Store Beat Truth In Metadata
 
 Recommended metadata keys:
 
@@ -55,10 +66,11 @@ Recommended metadata keys:
 - `music_turns`
 - `silence_windows`
 
-### 5. Quality Gate
+### 6. Quality Gate
 
 - the beat map escalates cleanly,
 - dialogue and title cards do not explain the same thing twice,
+- no-ai-slop compliance: zero puffery, zero binary contrasts, zero banned words,
 - the reveal lands distinctly,
 - the landing gives the viewer a final feeling or action.
 

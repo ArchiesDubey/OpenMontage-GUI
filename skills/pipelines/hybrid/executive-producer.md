@@ -59,6 +59,12 @@ CHECK: Source/support beat separation
   - Are source-led and support-led beats clearly separated?
   - Does the script avoid relying on unsupported assets?
   - Is narration/dialogue plan realistic?
+
+CHECK: Anti-AI-slop on support narration (/no-ai-slop)
+  - Scan added bridging narration for banned AI words (delve, tapestry, robust, streamline, leverage, utilize, cutting-edge)
+  - Check for binary contrasts ("not X, but Y") and throat-clearing openers
+  - Check for em dashes ('—') in spoken voiceover
+  - If violations found: REVISE narration per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

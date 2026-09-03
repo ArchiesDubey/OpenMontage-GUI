@@ -129,6 +129,7 @@ stages:
     review_focus:
       - Beat map escalates cleanly
       - Dialogue or title-card usage is sparse and purposeful
+      - "Anti-AI-slop compliance: voiceover and cards are free of hollow puffery, binary contrasts, and banned AI words"
       - Reveal and landing beats are clear
     success_criteria:
       - Schema-valid script artifact

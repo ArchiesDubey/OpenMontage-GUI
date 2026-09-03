@@ -20,7 +20,7 @@ class TTSSelector(BaseTool):
     provider = "selector"
     stability = ToolStability.BETA
     runtime = ToolRuntime.HYBRID
-    agent_skills = ["text-to-speech", "elevenlabs"]
+    agent_skills = ["text-to-speech", "elevenlabs", "no-ai-slop"]
 
     capabilities = [
         "text_to_speech",

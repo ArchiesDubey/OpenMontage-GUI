@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Archetype 1: Counter-Intuitive Truth (NO JOBS)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #74B9FF 0%, #A0D8EF 60%, #E8F5E9 60%);
+      font-family: 'Outfit', sans-serif;
+      position: relative;
+    }
+
+    /* Sun */
+    .sun {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #FFF7C2 20%, #FEE57E 80%);
+      top: 180px;
+      left: 640px;
+      box-shadow: 0 0 60px rgba(255, 235, 120, 0.7);
+    }
+
+    /* Background Landscape (Savannah & Mountains) */
+    .savannah {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 1280px;
+      height: 290px;
+    }
+
+    /* Punch Headline Text */
+    .headline {
+      position: absolute;
+      top: 35px;
+      left: 50%;
+      transform: translateX(-15%);
+      font-size: 155px;
+      font-weight: 900;
+      color: #FFEE00;
+      text-transform: uppercase;
+      letter-spacing: -3px;
+      -webkit-text-stroke: 18px #121212;
+      paint-order: stroke fill;
+      filter: drop-shadow(0 14px 0 #121212);
+      z-index: 50;
+      line-height: 1;
+    }
+
+    /* Primary Focal Character (Caveman Leaning on Boulder) */
+    .hero-container {
+      position: absolute;
+      bottom: -20px;
+      left: 60px;
+      width: 600px;
+      height: 600px;
+      z-index: 20;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Glowing Sun -->
+  <div class="sun"></div>
+
+  <!-- Landscape Layer -->
+  <svg class="savannah" viewBox="0 0 1280 290" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Distant hills -->
+    <path d="M0 120 Q 300 60 650 110 T 1280 70 L 1280 290 L 0 290 Z" fill="#88C76D" />
+    <!-- Ground plane -->
+    <path d="M0 150 Q 500 130 1280 160 L 1280 290 L 0 290 Z" fill="#B2DB7B" />
+    
+    <!-- Distant Campfire & Stick Figures -->
+    <!-- Campfire -->
+    <polygon points="680,180 670,210 690,210" fill="#FF5722" />
+    <polygon points="680,185 675,208 685,208" fill="#FFC107" />
+    <!-- Distant hunter with spear -->
+    <circle cx="730" cy="165" r="10" fill="#FFF" stroke="#121212" stroke-width="3" />
+    <line x1="730" y1="175" x2="730" y2="205" stroke="#121212" stroke-width="3" />
+    <line x1="730" y1="205" x2="720" y2="225" stroke="#121212" stroke-width="3" />
+    <line x1="730" y1="205" x2="740" y2="225" stroke="#121212" stroke-width="3" />
+    <line x1="720" y1="185" x2="745" y2="150" stroke="#121212" stroke-width="3" /> <!-- Spear -->
+    
+    <!-- Distant Acacia Tree -->
+    <path d="M 940 210 L 950 140 Q 980 110 1060 115 Q 1020 130 960 145 Z" fill="#4B382A" stroke="#121212" stroke-width="3" />
+    <ellipse cx="980" cy="115" rx="90" ry="25" fill="#5F8D4E" stroke="#121212" stroke-width="3" />
+    <ellipse cx="1040" cy="110" rx="70" ry="20" fill="#6DA658" stroke="#121212" stroke-width="3" />
+  </svg>
+
+  <!-- Big Punch Headline -->
+  <div class="headline">NO JOBS</div>
+
+  <!-- Hero Character & Boulder -->
+  <div class="hero-container">
+    <svg viewBox="0 0 600 600" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <!-- Big grey resting boulder -->
+      <path d="M 40 380 Q 20 180 170 160 Q 320 140 380 320 Q 420 480 300 560 L 60 560 Z" fill="#95A5A6" stroke="#121212" stroke-width="8" stroke-linejoin="round" />
+      
+      <!-- Character Fur Clothing (Brown animal pelt) -->
+      <path d="M 220 340 Q 270 330 330 370 L 370 540 Q 290 570 200 540 Z" fill="#8D5B4C" stroke="#121212" stroke-width="7" />
+      <!-- Fur texture strokes -->
+      <path d="M 230 400 L 220 415 M 260 450 L 250 465 M 310 420 L 300 440" stroke="#121212" stroke-width="4" stroke-linecap="round" />
+
+      <!-- Stick Arms relaxed behind head -->
+      <path d="M 210 320 L 140 240 L 200 200" stroke="#121212" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <path d="M 270 310 L 340 240 L 290 200" stroke="#121212" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+      <!-- The Pure White Egghead -->
+      <ellipse cx="240" cy="220" rx="100" ry="95" fill="#FFFFFF" stroke="#121212" stroke-width="9" />
+
+      <!-- Messy prehistoric hair on head -->
+      <path d="M 150 190 Q 130 110 210 120 Q 240 80 290 120 Q 340 100 335 180 Q 320 130 260 140 Q 190 140 150 190 Z" fill="#4A2E18" stroke="#121212" stroke-width="6" stroke-linejoin="round" />
+
+      <!-- Relaxed / Smug Closed Eyes & Eyebrows -->
+      <!-- Eyebrows (Peaceful gentle arcs) -->
+      <path d="M 175 180 Q 200 170 220 182" stroke="#121212" stroke-width="6" stroke-linecap="round" fill="none" />
+      <path d="M 260 182 Q 280 170 305 180" stroke="#121212" stroke-width="6" stroke-linecap="round" fill="none" />
+      
+      <!-- Eyes (Closed contented smile arcs) -->
+      <path d="M 180 205 Q 200 225 220 205" stroke="#121212" stroke-width="7" stroke-linecap="round" fill="none" />
+      <path d="M 260 205 Q 280 225 300 205" stroke="#121212" stroke-width="7" stroke-linecap="round" fill="none" />
+
+      <!-- Peaceful gentle smile -->
+      <path d="M 220 245 Q 245 260 270 245" stroke="#121212" stroke-width="6" stroke-linecap="round" fill="none" />
+
+      <!-- Stick Legs resting -->
+      <polyline points="330,520 440,510 480,560" stroke="#121212" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    </svg>
+  </div>
+
+</body>
+</html>

@@ -80,6 +80,7 @@ stages:
     review_focus:
       - Full episode transcribed with speaker diarization
       - Quotable moments and highlight segments identified
+      - "Anti-AI-slop compliance: synthesized chapter titles, blurbs, and intro copy are free of AI tropes"
       - Topic transitions mapped for chapter markers
     success_criteria:
       - Schema-valid script artifact

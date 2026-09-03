@@ -33,18 +33,22 @@ Section-level delivery cues:
 {
   "pace": "measured",
   "energy": "curious",
-  "emphasis_words": ["not", "process"],
+  "emphasis_words": ["meaning", "keywords"],
   "pause_before_seconds": 0.2,
   "pause_after_seconds": 0.7,
-  "delivery_note": "Set up the contrast, then slow down on the final phrase.",
-  "provider_text": "This is not just another tool. <break time=\"0.6s\"/> It is a process."
+  "delivery_note": "Deliver the distinction with calm precision, pausing before the core mechanism.",
+  "provider_text": "Vector search indexes meaning. <break time=\"0.6s\"/> Keyword search only matches exact words."
 }
 ```
 
 ## Writing Rules
 
-- Write spoken language, not essay language. Prefer short sentences, light
+- Run the `/no-ai-slop` pass FIRST. Clean the narration of banned words, binary contrasts,
+  and em dashes before applying delivery cues (`skills/meta/no-ai-slop.md`).
+- Write spoken language, not essay language. Prefer short sentences (11-16 words), light
   contractions, and clear punctuation.
+- Never use em dashes (`—`) in provider_text. Em dashes break TTS prosody; use
+  commas, periods, or explicit `<break time="..."/>` tags instead.
 - Use silence as structure. Add a pause before reversals, after surprising
   claims, and before the final takeaway.
 - Keep pause tags purposeful. Too many breaks sound theatrical and slow.

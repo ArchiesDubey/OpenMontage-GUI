@@ -4,6 +4,11 @@
 
 Write scripts as performable animation beats, not just narration.
 
+## References
+
+- `skills/meta/no-ai-slop.md`
+- `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`)
+
 ## Process
 
 1. Lock audio architecture:
@@ -19,12 +24,17 @@ Write scripts as performable animation beats, not just narration.
    - prop interaction,
    - camera,
    - environment.
+4. Run the mandatory `/no-ai-slop` editing pass (`skills/meta/no-ai-slop.md`):
+   - Dialogue and narration must feel like authentic human speech, not corporate AI.
+   - Strip banned AI words (*delve, tapestry, robust, streamline, leverage, utilize, cutting-edge*).
+   - Eliminate binary contrasts (*"not X, but Y"*) and throat-clearing openers.
+   - Remove em dashes (`—`) in spoken dialogue to keep lip-sync and phoneme timing clean.
 
 ## Writing Rules
 
 - Prefer short visual beats with readable holds.
 - Avoid action that needs many unique hand-drawn poses unless approved.
-- Dialogue should be short enough for mouth-shape approximation.
+- Dialogue should be short enough for mouth-shape approximation and stripped of all AI slop.
 - Silent/music-led scenes need stronger physical acting notes.
 
 ## Output Notes

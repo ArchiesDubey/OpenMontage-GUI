@@ -220,6 +220,11 @@ CHECK: Section boundaries
   - Do sections align with natural topic changes?
   - Are timestamps within the raw footage duration?
   - Any section longer than 60s? (May need splitting for better scene planning)
+
+CHECK: Anti-AI-slop on overlays and cues (/no-ai-slop)
+  - Scan authored text cards, lower thirds, and B-roll callouts for banned AI words (delve, robust, streamline, leverage, pivotal)
+  - Check for corporate buzzwords and artificial phrasing
+  - If violations found: REVISE copy per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

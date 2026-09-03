@@ -133,6 +133,7 @@ stages:
       - Speaker directions present for TTS
       - Voice performance plan includes concrete pacing, pause, emphasis, and sample cues
       - Script incorporates research data points and cited facts
+      - "Anti-AI-slop compliance: zero banned AI words, zero binary contrasts, zero em dashes in TTS text"
     success_criteria:
       - Schema-valid script with enhancement_cues per section
       - Total duration matches selected concept target within 10%

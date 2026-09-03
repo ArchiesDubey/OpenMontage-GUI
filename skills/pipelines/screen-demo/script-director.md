@@ -10,6 +10,8 @@ You are turning the inspected recording into a timestamped procedural script. Un
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifact | `state.artifacts["idea"]["brief"]` | Brief with workflow, critical moments, and source notes |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop pass for procedural narration |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and corporate filler |
 | Tools | `transcriber`, `frame_sampler`, `audio_enhance` | Audio/transcript inspection and spot checks |
 
 ## Process
@@ -63,7 +65,7 @@ Every section should do three things:
 - say why it matters,
 - leave clear cues for highlights, zooms, or speed changes.
 
-### 4. Keep The Narration Procedural
+### 4. Keep The Narration Procedural and Slop-Free (`/no-ai-slop`)
 
 Use the research-backed rules:
 
@@ -71,7 +73,8 @@ Use the research-backed rules:
 - keep wording short and direct,
 - avoid jargon unless the target audience clearly expects it,
 - keep the action on screen synchronized with the wording,
-- preserve the speaker's natural voice if the source already has narration.
+- preserve the speaker's natural voice if the source already has narration,
+- run `/no-ai-slop` (`skills/meta/no-ai-slop.md`): strip banned words (*delve, robust, streamline, leverage, empower*), avoid binary contrasts (*"this is not just a dashboard, it's..."*), and strip em dashes (`—`) from narration.
 
 ### 5. Mark Pacing Decisions
 
@@ -106,6 +109,7 @@ Recommended `script.metadata` fields:
 | **Speed marking** | Are dead-time segments marked for acceleration or removal? |
 | **Enhancement density** | Are highlights reserved for true attention shifts rather than every click? |
 | **Technical accuracy** | Are all software names, commands, and UI elements named correctly? |
+| **No-AI-slop compliance** | Narration is free of banned AI words, binary contrasts, and em dashes? |
 | **Word economy** | Is narration concise and procedural? |
 
 ### Mid-Production Fact Verification

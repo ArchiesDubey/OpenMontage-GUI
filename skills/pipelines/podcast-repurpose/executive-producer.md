@@ -60,6 +60,13 @@ CHECK: Transcript quality
   - Speaker diarization present if multi-speaker?
   - Highlight segments and quotable moments identified?
   - At least N candidate clips where N >= clip_count_target?
+
+CHECK: Anti-AI-slop on summaries, chapter titles, and cards (/no-ai-slop)
+  - Scan authored chapter titles, pull quotes, social blurbs, and intro copy for AI slop
+  - Check for banned AI words (delve, tapestry, robust, streamline, leverage, pivotal)
+  - Check for binary contrasts ("not X, but Y") and clickbait throat-clearing
+  - Check for em dashes ('—') in synthesized intro/outro voiceover
+  - If violations found: REVISE copy per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

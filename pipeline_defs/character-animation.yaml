@@ -126,6 +126,7 @@ stages:
     review_focus:
       - Script is written as action beats, not only narration
       - Dialogue/narration architecture is locked
+      - "Anti-AI-slop compliance: dialogue and narration are free of AI clichés, binary contrasts, and robotic phrasing"
       - Every emotional turn can be expressed with poses and actions
     success_criteria:
       - Schema-valid script

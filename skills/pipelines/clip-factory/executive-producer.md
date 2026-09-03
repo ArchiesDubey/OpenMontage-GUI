@@ -61,6 +61,12 @@ CHECK: Transcript and ranking
   - At least N candidate clips where N >= clip_count_target?
   - Each candidate is self-contained (standalone test)?
   - Clips ranked by quality/engagement potential?
+
+CHECK: Anti-AI-slop on generated hooks and bridge copy (/no-ai-slop)
+  - Scan authored hook titles, captions, and bridge lines for AI cliches and clickbait tropes
+  - Check for banned AI words (delve, tapestry, robust, streamline, leverage, pivotal)
+  - Check for binary contrasts ("not X, but Y") and faux-insight setups ("What nobody tells you")
+  - If violations found: REVISE copy per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

@@ -158,6 +158,12 @@ CHECK: Transcript quality
 CHECK: Duration estimate
   - Estimated output duration reasonable for the content?
   - If demo is > 5 minutes: suggest trimming or speed adjustments
+
+CHECK: Anti-AI-slop compliance (/no-ai-slop)
+  - If voiceover or step narration is authored: scan for banned AI words (delve, robust, streamline, leverage, empower)
+  - Check for binary contrasts ("not X, but Y") and throat-clearing openers
+  - Check for em dashes ('—') in spoken voiceover
+  - If violations found: REVISE narration per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

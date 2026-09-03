@@ -87,16 +87,28 @@ Add 1-2 sentences in the beat describing the mechanism (cut, pan, reveal-by-ligh
 
 | Type | Pattern | Best For |
 |------|---------|----------|
-| **Contrarian** | "Everything you've been told about X is wrong." | Veritasium-style science/myth-busting |
-| **Outcome** | "By the end of this video, you'll understand X." | 3Blue1Brown-style math/concept |
-| **Mystery** | "In 1987, something impossible happened..." | Kurzgesagt-style story-driven |
-| **Stakes** | "This one mistake costs people X every year." | Practical/how-to content |
+| **Contrarian** | Lead with a concrete, counterintuitive fact ("Ice in hot coffee doesn't melt the way textbooks claim.") | Veritasium-style science/myth-busting |
+| **Outcome** | Clear, promised capability ("In three minutes, you'll be able to trace every SQL query your app runs.") | 3Blue1Brown-style math/concept/dev |
+| **Mystery** | Grounded historical or physical anomaly ("In 1987, a radar station in Ohio picked up a signal that shouldn't exist.") | Kurzgesagt-style story-driven |
+| **Stakes** | Immediate cost or risk ("One unindexed column can lock your production database for twenty minutes.") | Practical/how-to content |
+
+> **Anti-Slop Rule for Hooks:** Never open with throat-clearing clichés like "Here's what nobody tells you...", "What if I told you...", or "Everything you know about X is wrong." Ground the hook immediately in a specific fact, date, number, or tangible mechanism per `skills/meta/no-ai-slop.md`.
 
 ## The 30-Second Rule
 
 YouTube data shows **50% of viewer drop-off happens in the first 30 seconds**. The hook + tension
 setup MUST be complete by second 30. Retention curves that survive the 30-second cliff typically
 retain 40-60% through the full video.
+
+## Eliminating AI Slop from Narration (The `/no-ai-slop` Standard)
+
+Spoken video narration sounds instantly robotic when it contains written AI drafting tics. Every script must run through `skills/meta/no-ai-slop.md` (and slash command `/no-ai-slop`):
+
+1. **No binary contrasts:** Never write *"It's not about X, it's about Y"*. State Y directly.
+2. **No banned AI words:** Strip *delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal*.
+3. **No em-dash crutches:** Never use `—` in spoken copy. Use periods, commas, or explicit pauses.
+4. **No fake-profound kickers:** End on the last concrete fact or next action, not a poetic aphorism.
+5. **Portability test:** If a sentence could describe any competing product or topic, rewrite it with specific names, numbers, or mechanisms.
 
 ## The "But-Therefore" Method
 

@@ -80,6 +80,7 @@ stages:
       - Full transcription with accurate timestamps
       - Clip-worthy segments identified and ranked
       - Each candidate clip is self-contained (makes sense without context)
+      - "Anti-AI-slop compliance: generated hooks, titles, and bridge copy are free of clickbait AI tropes"
     success_criteria:
       - Schema-valid script artifact
       - At least N candidate clips identified (where N >= brief target)

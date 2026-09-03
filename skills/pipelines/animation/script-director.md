@@ -12,6 +12,8 @@ This stage turns the approved proposal into animation-ready beats. The script mu
 | Prior artifact | `proposal_packet` from Proposal Director | Selected concept, animation mode, target duration, reuse strategy |
 | Optional artifact | `research_brief` from Research Director | Data points, audience insights, accuracy constraints |
 | Meta skill | `skills/meta/voice-performance-director.md` | Structured TTS delivery cues for natural, expressive narration |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop editing pass for human-sounding narration |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés, binary contrasts, and robotic cadence |
 | Tools | `transcriber` | Optional source transcript support |
 
 ## Process
@@ -101,7 +103,17 @@ If a `research_brief` is available:
 - Cite sources naturally ("According to [source]..." or "A [year] study found...")
 - Do NOT invent statistics — only use what the research found
 
-### 7. Quality Gate
+### 7. Run the Mandatory Anti-AI-Slop Pass (`/no-ai-slop`)
+
+Before locking text, run the narration through the `/no-ai-slop` editing pass (`skills/meta/no-ai-slop.md` + `.agents/skills/no-ai-slop/SKILL.md`):
+- Strip all banned AI words (*delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal*).
+- Eliminate binary contrasts (*"not X, but Y"* -> state Y directly).
+- Cut throat-clearing openers (*"Here's the thing"*, *"Let me be clear"*).
+- Remove trailing `-ing` superficial analysis clauses.
+- Strip all em dashes (`—`) from spoken text sent to TTS.
+- Verify every line passes the portability test and read-aloud test.
+
+### 8. Quality Gate
 
 Before submitting the script, verify:
 
@@ -109,6 +121,7 @@ Before submitting the script, verify:
 - [ ] On-screen text is concise (phrases, not paragraphs)
 - [ ] Timing is animation-friendly (holds budgeted)
 - [ ] Narration-led sections include concrete delivery cues and a voice-performance sample section
+- [ ] No-AI-slop compliance: zero banned AI words, zero binary contrasts, zero em dashes in TTS text
 - [ ] Word count is within ±10% of target duration
 - [ ] Animation mode is respected in writing style
 - [ ] Research data points are integrated (if research_brief available)
@@ -130,6 +143,7 @@ add the source. Do not invent statistics, dates, or attributions.
 
 - **Writing too many ideas into one section.** One beat = one visual idea.
 - **Treating captions and on-screen text as the same thing.** Subtitles are narration transcribed. On-screen text is designed content that's part of the animation.
+- **Leaving AI slop in narration.** Robotic phrasing and binary contrasts sound unnatural when read aloud. Run `/no-ai-slop` before submitting.
 - **Forgetting that motion needs pause and emphasis.** Budget hold times.
 - **Ignoring the animation mode.** A Manim script reads differently than an AI video script.
 - **Writing research-less scripts when a research_brief exists.** If the research found surprising data, use it. Generic scripts waste the research investment.

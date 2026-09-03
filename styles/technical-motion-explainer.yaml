@@ -98,6 +98,16 @@ chart_palette:
   - "#A855F7"
   - "#F97316"
 
+thumbnail:
+  archetypes: [asymmetry_reaction, hardware_lineup, whistleblower_degradation]
+  headline_words_max: 4
+  headline_font: "Inter Black 900"
+  color_contrast_standard: "WCAG AAA (>7:1)"
+  background: "#0A0A0A"
+  drop_shadow: "8px 8px 0px (zero blur)"
+  template_dir: ".agents/skills/technical-thumbnail-craft/templates"
+  render_script: ".agents/skills/technical-thumbnail-craft/scripts/render_thumbnail.py"
+
 color_rules:
   harmony_type: "complementary"
   contrast_validation: true

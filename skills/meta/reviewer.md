@@ -134,12 +134,50 @@ Structure your review as:
 | research | Source diversity, claim verifiability, visual reference quality |
 | proposal | Delivery promise clarity, renderer family AND render runtime selection, music/voice plan, decision log started |
 | idea | Hook uniqueness, research depth, angle diversity |
-| script | Timing accuracy, narrative arc, enhancement cue density |
+| script | Timing accuracy, narrative arc, enhancement cue density, no-ai-slop compliance |
 | scene_plan | Full coverage, visual variety, asset feasibility, slideshow risk score |
 | assets | File existence, style consistency, budget adherence |
 | edit | Timeline coverage, audio sync, subtitle presence, delivery promise compliance |
 | compose | Playability, duration accuracy, audio quality, pre-compose validation pass |
 | publish | SEO quality, metadata completeness, export packaging |
+
+## Script Anti-AI-Slop Review
+
+Run at **script** stage on all narration, dialogue, and on-screen text across every pipeline. Enforces the anti-slop doctrine from `skills/meta/no-ai-slop.md` and `.agents/skills/no-ai-slop/SKILL.md`.
+
+### Checks:
+
+1. **Banned AI words**:
+   - Scan for: *delve, delving, tapestry, robust, streamline, streamlined, leverage, leveraging, utilize, utilization, facilitate, empower, cutting-edge, game-changer, paradigm shift, pivotal, beacon, realm, multifaceted, intricate, paramount, transformative, elevate, supercharge, harness, ever-evolving*.
+   - If any banned words appear in narration, dialogue, or on-screen copy: **CRITICAL** — "Banned AI slop word '{word}' found in section {id}. Replace with concrete, plain English per skills/meta/no-ai-slop.md."
+
+2. **Binary contrast formulas**:
+   - Check for *"This is not X, it's Y"*, *"The question isn't X, it's Y"*, *"It's not just about X, it's Y"*.
+   - If found: **CRITICAL** — "Binary contrast formula in section {id} ('{line}'). State the point directly: '{proposed_fix}'."
+
+3. **Throat-clearing and faux-insight setups**:
+   - Check for *"Here's the thing"*, *"Let me be clear"*, *"The uncomfortable truth is"*, *"What most people get wrong"*, *"The part everyone misses"*.
+   - If found: **CRITICAL** — "Throat-clearing opener in section {id} ('{line}'). Delete the setup and state the substantive claim directly."
+
+4. **Colon reveals for fake drama**:
+   - Check for noun phrases followed by a colon and lowercase dramatic reveal in narration text.
+   - If found: **SUGGESTION** (or **CRITICAL** if repeated) — "Colon reveal in section {id}. Rewrite as a complete, natural spoken sentence."
+
+5. **Superficial trailing `-ing` clauses**:
+   - Check for trailing editorial clauses (*"highlighting..."*, *"underscoring..."*, *"showcasing..."*).
+   - If found: **SUGGESTION** — "Superficial '-ing' clause in section {id}. Replace with concrete evidence or delete the editorializing."
+
+6. **Em-dash cadence crutches in TTS narration**:
+   - Check for `—` in `script.sections[].text` and `delivery_cues.provider_text`.
+   - If found in TTS text: **CRITICAL** (if multiple) or **SUGGESTION** (if single) — "Em dash in section {id} narration. Em dashes disrupt TTS prosody. Replace with period, comma, or SSML `<break>` tag."
+
+7. **Endings check**:
+   - Check for summary recaps (*"In conclusion"*, *"Ultimately"*, *"As we've seen"*) or fake-profound kickers (*"Because in the end..."*).
+   - If found: **CRITICAL** — "Weak AI recap/kicker in section {id}. End on the last concrete fact, takeaway, or call to action."
+
+8. **Portability test**:
+   - Does any sentence read like generic brochure copy that could be pasted into any competitor's video unchanged?
+   - If found: **SUGGESTION** — "Section {id} line fails portability test. Ground in specific facts, metrics, or mechanisms from research_brief."
 
 ## Reference Alignment Review
 

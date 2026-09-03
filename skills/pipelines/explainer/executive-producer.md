@@ -208,6 +208,18 @@ CHECK: Word count vs. duration target
       Target is {Z} minutes. Cut {N} words."
   - If estimated_minutes < target_duration * 0.7:
       REVISE script: "Script is too short. Add {N} words of content."
+
+CHECK: Anti-AI-slop compliance (/no-ai-slop)
+  - Scan script.sections[].text and delivery_cues.provider_text for banned AI words:
+      delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal
+  - If banned words found:
+      REVISE script: "Banned AI word '{word}' found in section {id}. Rewrite with natural human language per skills/meta/no-ai-slop.md."
+  - Check for binary contrasts ("This is not X, it's Y"):
+      If found, REVISE script: "Binary contrast in section {id}. State the point directly."
+  - Check for em dashes ('—') in TTS narration text:
+      If found, REVISE script: "Em dash in section {id} narration breaks TTS prosody. Replace with period or comma."
+  - Check for throat-clearing openers ("Here's the thing", "Let me be clear"):
+      If found, REVISE script: "Throat-clearing opener in section {id}. Cut the opener and state the claim directly."
 ```
 
 ### After SCENE_PLAN stage:

@@ -75,6 +75,7 @@ stages:
     review_focus:
       - Transcript truth is strong enough for downstream localization
       - Glossary and protected terms are preserved
+      - "Anti-AI-slop compliance: translated copy sounds natural and idiomatic, free of machine-translation slop"
       - Target-language script package is reviewable before synthesis
     success_criteria:
       - Schema-valid script artifact

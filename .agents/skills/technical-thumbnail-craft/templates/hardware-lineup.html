@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Thumbnail: Hardware Lineup (RepoChad Archetype)</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap');
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        background: #08080a;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 60px 80px 40px;
+        position: relative;
+      }
+
+      /* Dark Textured Background */
+      .bg-chalk {
+        position: absolute;
+        inset: 0;
+        background-color: #08080a;
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+        background-size: 32px 32px, 100% 100%;
+        z-index: 0;
+      }
+
+      /* Top Headline Zone */
+      .headline-container {
+        z-index: 10;
+        text-align: center;
+      }
+
+      .headline-row-1 {
+        font-size: 110px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        color: #ffffff;
+        line-height: 0.95;
+      }
+
+      .headline-row-2 {
+        font-size: 125px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        line-height: 0.95;
+        margin-top: 6px;
+      }
+
+      .headline-row-2 .accent-green {
+        color: #4ade80;
+        margin-right: 18px;
+      }
+
+      .headline-row-2 .accent-blue {
+        color: #38bdf8;
+      }
+
+      /* Main Lineup Container */
+      .lineup {
+        z-index: 10;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 28px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      /* Individual Tier Hardware Cards */
+      .tier-card {
+        background: #111116;
+        border-radius: 12px;
+        border: 3px solid #282836;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 12px;
+        position: relative;
+      }
+
+      .tier-1 { width: 250px; height: 320px; border-color: #f87171; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2); }
+      .tier-2 { width: 270px; height: 350px; border-color: #ffd600; box-shadow: 0 10px 30px rgba(255, 214, 0, 0.2); }
+      .tier-3 { width: 290px; height: 380px; border-color: #4ade80; box-shadow: 0 10px 30px rgba(74, 222, 128, 0.2); }
+      .tier-4 { width: 310px; height: 410px; border-color: #38bdf8; box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2); }
+      .tier-5 { width: 330px; height: 450px; border-color: #c084fc; box-shadow: 0 10px 30px rgba(192, 132, 252, 0.25); }
+
+      /* Fan Graphic Inside Card */
+      .card-fan {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .card-fan-center {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #242434;
+        border: 2px solid #ffffff;
+      }
+
+      /* Massive VRAM Spec Badge */
+      .vram-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 38px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        border-radius: 8px;
+        padding: 8px 18px;
+        width: 90%;
+        text-align: center;
+        margin-bottom: 6px;
+      }
+
+      .badge-red { color: #f87171; background: rgba(239, 68, 68, 0.15); border: 2px solid #f87171; }
+      .badge-yellow { color: #ffd600; background: rgba(255, 214, 0, 0.15); border: 2px solid #ffd600; }
+      .badge-green { color: #4ade80; background: rgba(74, 222, 128, 0.15); border: 2px solid #4ade80; }
+      .badge-blue { color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 2px solid #38bdf8; }
+      .badge-purple { color: #c084fc; background: rgba(192, 132, 252, 0.15); border: 2px solid #c084fc; }
+
+      .card-status {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #a5a5a5;
+      }
+
+      /* Bottom Target Anchor */
+      .bottom-anchor {
+        z-index: 10;
+        background: #121218;
+        border: 2px solid #4ade80;
+        border-radius: 8px;
+        padding: 10px 36px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 0 24px rgba(74, 222, 128, 0.25);
+      }
+
+      .anchor-chip {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-chalk"></div>
+
+    <!-- 1. Headline Zone -->
+    <div class="headline-container">
+      <div class="headline-row-1">THE 2026 CUTOFF</div>
+      <div class="headline-row-2">
+        <span class="accent-green">EVERY</span>
+        <span class="accent-blue">SYSTEM</span>
+      </div>
+    </div>
+
+    <!-- 2. Main Hardware Tier Lineup -->
+    <div class="lineup">
+      <!-- Tier 1: 16GB -->
+      <div class="tier-card tier-1">
+        <div class="card-status">EXTINCT</div>
+        <div class="card-fan"><div class="card-fan-center"></div></div>
+        <div class="vram-badge badge-red">16GB</div>
+      </div>
+
+      <!-- Tier 2: 32GB -->
+      <div class="tier-card tier-2">
+        <div class="card-status">MINIMUM</div>
+        <div class="card-fan"><div class="card-fan-center"></div></div>
+        <div class="vram-badge badge-yellow">32GB</div>
+      </div>
+
+      <!-- Tier 3: 64GB -->
+      <div class="tier-card tier-3">
+        <div class="card-status">RETAIN</div>
+        <div class="card-fan"><div class="card-fan-center"></div></div>
+        <div class="vram-badge badge-green">64GB</div>
+      </div>
+
+      <!-- Tier 4: 128GB -->
+      <div class="tier-card tier-4">
+        <div class="card-status">OPTIMAL</div>
+        <div class="card-fan"><div class="card-fan-center"></div></div>
+        <div class="vram-badge badge-blue">128GB</div>
+      </div>
+
+      <!-- Tier 5: 288GB -->
+      <div class="tier-card tier-5">
+        <div class="card-status">DATACENTER</div>
+        <div class="card-fan"><div class="card-fan-center"></div></div>
+        <div class="vram-badge badge-purple">288GB</div>
+      </div>
+    </div>
+
+    <!-- 3. Bottom Target Anchor -->
+    <div class="bottom-anchor">
+      <span style="color: #4ade80; font-size: 20px;">⚡</span>
+      <span class="anchor-chip">DDR5 & HBM WAFER ALLOCATION</span>
+      <span style="color: #4ade80; font-size: 20px;">⚡</span>
+    </div>
+  </body>
+</html>

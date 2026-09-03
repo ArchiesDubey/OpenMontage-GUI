@@ -62,6 +62,12 @@ CHECK: Transcript truth
   - Glossary terms preserved in translations?
   - Translated scripts reviewable before synthesis?
   - Duration estimates per language reasonable (some languages expand 20-30%)?
+
+CHECK: Anti-AI-slop on translated copy (/no-ai-slop)
+  - Translated copy sounds natural and idiomatic, not robotic or word-for-word machine translation
+  - Check for binary contrasts ("not X, but Y") and artificial throat-clearing
+  - Check for em dashes ('—') in target-language narration (breaks TTS flow)
+  - If violations found: REVISE translated script per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

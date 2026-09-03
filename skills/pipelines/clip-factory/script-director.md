@@ -10,6 +10,8 @@ This stage converts the long-form source into a ranked candidate list and then i
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifact | `state.artifacts["idea"]["brief"]` | Batch goals and platform targets |
+| Meta skill | `skills/meta/no-ai-slop.md` | Anti-AI-slop pass for hook titles and bridge narration |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and clickbait tropes |
 | Tools | `transcriber`, `scene_detect` | Transcript-first selection and visual checks |
 
 ## Process
@@ -54,7 +56,14 @@ Maintain diversity across:
 - clip families,
 - energy levels.
 
-### 5. Use Metadata For Ranking Truth
+### 5. Humanize Hook Titles and Bridge Copy (`/no-ai-slop`)
+
+When authoring on-screen hook titles, re-contextualizing captions, or synthesized bridging narration:
+- Run `/no-ai-slop` (`skills/meta/no-ai-slop.md`).
+- Avoid faux-insight setups (*"What nobody tells you"*), binary contrasts (*"Not X, it's Y"*), and empty puffery.
+- Keep titles and hook lines grounded in the speaker's actual point.
+
+### 6. Use Metadata For Ranking Truth
 
 The script schema is small, so store the richer batch analysis in `script.metadata`.
 
@@ -75,10 +84,11 @@ Each candidate should record:
 - scoring dimensions,
 - likely crop viability.
 
-### 6. Quality Gate
+### 7. Quality Gate
 
 - the top-ranked clips are genuinely the strongest, not just the earliest found,
 - every selected clip passes the standalone test,
+- hook titles and bridge copy pass the `/no-ai-slop` check (no clickbait AI clichés or binary contrasts),
 - the set covers the source deliberately instead of clustering in one section,
 - low-quality candidates are rejected honestly.
 

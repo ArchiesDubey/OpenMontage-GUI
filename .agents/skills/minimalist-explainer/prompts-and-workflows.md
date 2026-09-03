@@ -100,7 +100,7 @@ Script / Scenes:
 Requirements:
 1. Generate ready-to-use FLUX / Midjourney prompts for each scene using the standardized positive/negative style tokens.
 2. Ensure the "Egghead" character retains exact visual consistency (pure white circular head, thick ink outline, modular clothing).
-3. Generate 3 high-clickrate Thumbnail concepts adhering strictly to the 3-Element Rule (Emotive Face + Bizarre Prop + 1-3 Word Bold Yellow Text).
+3. Generate 3 high-clickrate Thumbnail concepts adhering strictly to the 3-Element Rule (Emotive Face + Bizarre Prop + 1-3 Word Bold Yellow Text) and specify the matching HTML template from `minimalist-thumbnail-craft/templates/`.
 ```
 
 ---

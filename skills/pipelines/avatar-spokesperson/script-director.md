@@ -8,6 +8,8 @@ Turn the approved brief into scene-safe spoken copy for an avatar presenter. The
 
 - `docs/avatar-spokesperson-best-practices.md`
 - `skills/creative/storytelling.md`
+- `skills/meta/no-ai-slop.md`
+- `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`)
 
 ## Process
 
@@ -41,7 +43,16 @@ The presenter is already carrying attention. Use on-screen text only for:
 - CTA copy,
 - legal or compliance text that must appear.
 
-### 4. Use Metadata For Delivery Notes
+### 4. Run the Mandatory Anti-AI-Slop Pass (`/no-ai-slop`)
+
+Avatars reciting AI slop sound instantly uncanny and robotic. Before finalizing:
+- Strip banned AI words (*delve, tapestry, robust, streamline, leverage, utilize, cutting-edge, game-changer, pivotal*).
+- Eliminate binary contrasts (*"not X, but Y"* -> state Y directly).
+- Cut throat-clearing openers (*"Here's the thing"*, *"Let me be clear"*).
+- Strip em dashes (`—`) from spoken copy to keep avatar lip-sync rhythm natural.
+- Run the Read-Aloud test: ensure the words sound like a real person talking directly to a colleague.
+
+### 5. Use Metadata For Delivery Notes
 
 Recommended metadata keys:
 
@@ -51,9 +62,10 @@ Recommended metadata keys:
 - `supplied_script_source`
 - `legal_text_requirements`
 
-### 5. Quality Gate
+### 6. Quality Gate
 
-- the copy sounds spoken,
+- the copy sounds spoken and human,
+- no-ai-slop compliance: zero banned AI words, zero binary contrasts, zero em dashes in spoken text,
 - scene lengths are realistic,
 - CTA placement is clear,
 - text overlays are restrained.
@@ -74,6 +86,7 @@ add the source. Do not invent statistics, dates, or attributions.
 - Overstuffing one scene because the script reads well on paper.
 - Duplicating the same sentence in speech and large text overlays.
 - Writing humor or improvisational beats the avatar path cannot sell.
+- Leaving robotic AI slop in dialogue (buzzwords and binary contrasts destroy viewer trust immediately).
 
 ---
 

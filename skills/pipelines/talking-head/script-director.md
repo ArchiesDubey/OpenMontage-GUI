@@ -12,6 +12,8 @@ Unlike the explainer pipeline (which writes a script from scratch), you're extra
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifacts | `state.artifacts["idea"]["brief"]` | Content context |
+| Meta skill | `skills/meta/no-ai-slop.md` | Anti-AI-slop pass for overlay copy and cards |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and corporate buzzwords |
 | Tools | `transcriber` (WhisperX) | Speech-to-text with timestamps |
 
 ## Process
@@ -30,11 +32,12 @@ Group the transcript into logical sections:
 - Respect natural pauses (> 1.5s silence = potential section break)
 - Each section gets: id, text, start_seconds, end_seconds
 
-### Step 3: Enhance Section Metadata
+### Step 3: Enhance Section Metadata & Clean Overlays (`/no-ai-slop`)
 
 For each section, add:
 - Enhancement cues (where overlays, b-roll, or text cards could go)
 - Speaker notes (emphasis, pace changes detected in audio)
+- Run `/no-ai-slop` (`skills/meta/no-ai-slop.md`) on all authored text cards, lower thirds, and B-roll callout labels. Strip banned AI words (*delve, robust, streamline, leverage, pivotal*) and avoid corporate jargon.
 
 ### Step 4: Build Script Artifact
 
@@ -50,6 +53,7 @@ Assemble the structured script with:
 | **Transcription accuracy** | Are the words correct? (Spot-check a few sections) |
 | **Timestamp accuracy** | Do section boundaries align with actual speech? |
 | **Coverage** | Does the script span the full footage duration? |
+| **No-AI-slop on overlays** | Are on-screen text cards and cues free of AI buzzwords and corporate filler? |
 
 ### Step 6: Submit
 

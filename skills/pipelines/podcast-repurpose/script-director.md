@@ -10,6 +10,8 @@ This stage creates the transcript truth, speaker attribution, highlight set, and
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifact | `state.artifacts["idea"]["brief"]` | Deliverable mix and source truth |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop pass for synthesized copy |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and clickbait tropes |
 | Tools | `transcriber`, `audio_enhance` | Diarized transcript and cleanup |
 
 ## Process
@@ -48,18 +50,28 @@ Every highlight should be evaluated for:
 - attribution confidence,
 - platform fit.
 
-### 4. Build Chapters For Long-Form Packaging
+### 4. Humanize Synthesized Summaries and Hooks (`/no-ai-slop`)
+
+When generating chapter titles, pull quotes, social captions, or intro/outro narration:
+- Run `/no-ai-slop` (`skills/meta/no-ai-slop.md`).
+- Strip AI buzzwords (*delve, tapestry, robust, streamline, leverage, pivotal, game-changer*).
+- Eliminate binary contrasts (*"not just an interview, but a masterclass"* -> state the exact takeaways).
+- Avoid clickbait throat-clearing (*"What nobody tells you about..."*).
+- Strip em dashes (`—`) from any spoken intro/outro scripts.
+
+### 5. Build Chapters For Long-Form Packaging
 
 If the user wants a full-episode companion asset, identify the topic shifts now. These become chapter markers and later visual transition points.
 
-### 5. Keep The Schema Clean
+### 6. Keep The Schema Clean
 
 Use `sections[]` for the structured production-facing segments and put the richer highlight inventory in metadata.
 
-### 6. Quality Gate
+### 7. Quality Gate
 
 - speaker attribution is trustworthy,
 - the highlight set is strong enough for the requested deliverables,
+- all synthesized chapter titles, blurbs, and intro narration pass the `/no-ai-slop` check,
 - weak clips are rejected instead of padded,
 - chapter markers cover the long-form conversation cleanly.
 

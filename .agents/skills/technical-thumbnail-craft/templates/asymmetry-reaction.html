@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Thumbnail: Asymmetry Reaction (Kai Archetype)</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap');
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        background: #0a0a0a;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 70px 100px;
+        position: relative;
+      }
+
+      /* Subtle Cyber Grid */
+      .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+          radial-gradient(rgba(255, 214, 0, 0.04) 1px, transparent 1px);
+        background-size: 48px 48px, 144px 144px;
+        background-position: 0 0, 24px 24px;
+        z-index: 0;
+      }
+
+      /* Top Headline Zone */
+      .headline-container {
+        z-index: 10;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .headline {
+        font-size: 135px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+
+      .headline .accent {
+        color: #ef4444;
+        margin-left: 18px;
+        text-shadow: 0 0 40px rgba(239, 68, 68, 0.35);
+      }
+
+      /* Main Stage (Asymmetry Split) */
+      .stage {
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 70px;
+        margin-bottom: 50px;
+      }
+
+      /* Left Entity Card */
+      .card-left {
+        width: 420px;
+        height: 420px;
+        background: #111116;
+        border: 4px solid #ffffff;
+        border-radius: 16px;
+        box-shadow: 14px 14px 0px #ffd600;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transform: rotate(-3deg);
+      }
+
+      .wafer-svg {
+        width: 260px;
+        height: 260px;
+      }
+
+      .card-label {
+        position: absolute;
+        bottom: 24px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #ffd600;
+        background: rgba(255, 214, 0, 0.15);
+        padding: 4px 14px;
+        border-radius: 4px;
+      }
+
+      /* Vector Arrow Connector */
+      .arrow-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .arrow-svg {
+        width: 130px;
+        height: 90px;
+        filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.8));
+      }
+
+      /* Right Entity Card */
+      .card-right {
+        width: 660px;
+        height: 380px;
+        background: #ffd600;
+        border: 4px solid #ffffff;
+        border-radius: 18px;
+        box-shadow: 14px 14px 0px #ef4444;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: rotate(2deg);
+      }
+
+      /* Stylized Dual Fan Hardware Graphic */
+      .gpu-shroud {
+        width: 90%;
+        height: 80%;
+        background: #0d0d12;
+        border-radius: 12px;
+        border: 2px solid #282836;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 30px;
+      }
+
+      .fan {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        border: 3px solid #38bdf8;
+        background: #15151f;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .fan-blade {
+        position: absolute;
+        width: 14px;
+        height: 180px;
+        background: #ffd600;
+        border-radius: 4px;
+      }
+
+      .fan-center {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #38bdf8;
+        border: 3px solid #ffffff;
+        z-index: 2;
+      }
+
+      /* Pinned Provocative Spec Sticker */
+      .spec-sticker {
+        position: absolute;
+        top: -45px;
+        left: 40px;
+        background: #ffffff;
+        border: 3px solid #111116;
+        border-radius: 8px;
+        padding: 14px 28px;
+        box-shadow: 8px 8px 0px #38bdf8;
+        transform: rotate(-6deg);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .sticker-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        color: #111116;
+      }
+
+      .sticker-main {
+        font-family: 'Inter', sans-serif;
+        font-size: 46px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        color: #ef4444;
+        line-height: 1.1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+
+    <!-- 1. Headline Zone -->
+    <div class="headline-container">
+      <h1 class="headline">
+        <span>3 FOR 1.</span>
+        <span class="accent">RIP.</span>
+      </h1>
+    </div>
+
+    <!-- 2. Main Stage -->
+    <div class="stage">
+      <!-- Left Entity: 300mm Raw Wafer -->
+      <div class="card-left">
+        <svg class="wafer-svg" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="46" fill="#181824" stroke="#ffd600" stroke-width="3"/>
+          <path d="M 20,30 H 80 M 20,40 H 80 M 20,50 H 80 M 20,60 H 80 M 20,70 H 80" stroke="rgba(255, 214, 0, 0.4)" stroke-width="1.5"/>
+          <path d="M 30,20 V 80 M 40,20 V 80 M 50,20 V 80 M 60,20 V 80 M 70,20 V 80" stroke="rgba(255, 214, 0, 0.4)" stroke-width="1.5"/>
+          <circle cx="50" cy="4" r="3.5" fill="#0a0a0a" stroke="#ffd600" stroke-width="2"/>
+        </svg>
+        <div class="card-label">300mm RAW WAFER</div>
+      </div>
+
+      <!-- Arrow -->
+      <div class="arrow-box">
+        <svg class="arrow-svg" viewBox="0 0 100 60">
+          <path d="M 10,30 H 70 M 55,10 L 85,30 L 55,50" fill="none" stroke="#ffd600" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <!-- Right Entity: Starved Hardware & Absorbed HBM Stack -->
+      <div class="card-right">
+        <!-- Pinned Sticker -->
+        <div class="spec-sticker">
+          <span class="sticker-sub">FOUNDRY ALLOCATION</span>
+          <span class="sticker-main">100% GONE</span>
+        </div>
+
+        <div class="gpu-shroud">
+          <!-- Fan 1 -->
+          <div class="fan">
+            <div class="fan-blade" style="transform: rotate(0deg);"></div>
+            <div class="fan-blade" style="transform: rotate(45deg);"></div>
+            <div class="fan-blade" style="transform: rotate(90deg);"></div>
+            <div class="fan-blade" style="transform: rotate(135deg);"></div>
+            <div class="fan-center"></div>
+          </div>
+          <!-- Fan 2 -->
+          <div class="fan">
+            <div class="fan-blade" style="transform: rotate(20deg);"></div>
+            <div class="fan-blade" style="transform: rotate(65deg);"></div>
+            <div class="fan-blade" style="transform: rotate(110deg);"></div>
+            <div class="fan-blade" style="transform: rotate(155deg);"></div>
+            <div class="fan-center"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

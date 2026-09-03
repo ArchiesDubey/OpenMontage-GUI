@@ -60,9 +60,11 @@ Thumbnails in this niche achieve 10M+ views by adhering strictly to the **Rule o
 ```
 
 ### Thumbnail Rules:
-1. **Never use more than 3 words** in the thumbnail text.
-2. **Text Font:** Heavy sans-serif (Impact, Futura Bold, Anton, Montserrat Black) in bright yellow (`#FFEE00`) with a thick black outer stroke (15–20px) or dark drop shadow.
-3. **Readability at Mobile Scale:** The character's emotional expression must be immediately readable at a 100px mobile preview.
+1. **Zero Title Duplication:** Never duplicate words from the video title.
+2. **Never use more than 3 words** in the thumbnail text.
+3. **Text Font:** Heavy sans-serif (Outfit 900, Impact, Montserrat Black) in bright yellow (`#FFEE00`) with a thick black outer stroke (16–22px) and drop shadow.
+4. **Readability at Mobile Scale:** Must pass the 120px mobile squint test.
+5. **Dedicated Skill & HTML Templates:** For ready-to-render templates and automated mobile squint test generation, use [**`minimalist-thumbnail-craft`**](file:///Users/archiesdubey/Desktop/Code.nosync/OpenMontage/.agents/skills/minimalist-thumbnail-craft/SKILL.md).
 
 ---
 

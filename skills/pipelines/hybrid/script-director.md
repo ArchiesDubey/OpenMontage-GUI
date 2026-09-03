@@ -10,6 +10,8 @@ This stage maps the story across source-led beats and support-led beats. You are
 |-------|----------|---------|
 | Schema | `schemas/artifacts/script.schema.json` | Artifact validation |
 | Prior artifact | `state.artifacts["idea"]["brief"]` | Anchor medium and deliverable mix |
+| Meta skill | `skills/meta/no-ai-slop.md` | Mandatory anti-AI-slop pass for added narration |
+| Layer 3 | `.agents/skills/no-ai-slop/` (slash command `/no-ai-slop`) | Primary editor for stripping AI clichés and robotic cadence |
 | Tools | `transcriber`, `scene_detect`, `audio_enhance` | Optional source analysis |
 
 ## Process
@@ -36,7 +38,16 @@ Support-led beats should answer:
 - what needs emphasis,
 - what changes for a different platform.
 
-### 4. Use Metadata For Structure
+### 4. Humanize Added Narration (`/no-ai-slop`)
+
+Where bridging narration or voiceover is written to complement footage:
+- Run `/no-ai-slop` (`skills/meta/no-ai-slop.md`).
+- Strip banned AI words (*delve, tapestry, robust, streamline, leverage, utilize, cutting-edge*).
+- Eliminate binary contrasts (*"not X, but Y"*) and throat-clearing openers.
+- Strip em dashes (`—`) in spoken voiceover.
+- Ensure added narration matches the tone of the real footage rather than sounding like an AI assistant.
+
+### 5. Use Metadata For Structure
 
 Recommended metadata keys:
 
@@ -45,10 +56,11 @@ Recommended metadata keys:
 - `narration_sections`
 - `required_support_assets`
 
-### 5. Quality Gate
+### 6. Quality Gate
 
 - source-led beats are clearly marked,
 - support-led beats are justified,
+- added narration passes `/no-ai-slop` check (no AI jargon, binary contrasts, or em dashes),
 - the script does not depend on fake or unavailable assets without saying so,
 - the structure can produce the intended deliverables.
 

@@ -73,6 +73,7 @@ stages:
     human_approval_default: true
     review_focus:
       - Spoken copy is concise and natural
+      - "Anti-AI-slop compliance: zero banned AI words, zero binary contrasts, zero em dashes in spoken text"
       - Scene breaks are realistic for avatar delivery
       - On-screen text remains restrained
     success_criteria:

@@ -74,6 +74,7 @@ stages:
     review_focus:
       - Transcription accuracy (spot-check key sections)
       - Section boundaries align with topic changes
+      - "Anti-AI-slop compliance: authored text cards and B-roll callouts are free of corporate AI filler"
       - Timestamps match actual speech
     success_criteria:
       - Schema-valid script artifact

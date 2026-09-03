@@ -173,3 +173,4 @@ quality_rules:
   - "Amber appears only as emitted light from the lantern"
   - "No gore; the horror is carried by the artifact and the narration"
   - "Every episode cold-opens on one concrete physical object that still exists"
+  - "Narration must pass the mandatory /no-ai-slop humanizer pass (skills/meta/no-ai-slop.md): no em dashes in spoken text, zero banned AI words, no binary contrasts, plain grounded verbs"

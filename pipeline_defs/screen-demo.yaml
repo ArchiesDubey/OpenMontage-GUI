@@ -112,6 +112,7 @@ stages:
     review_focus:
       - Transcription captures any voiceover accurately
       - Key UI actions are annotated with timestamps
+      - "Anti-AI-slop compliance: procedural narration is concise and free of AI buzzwords or binary contrasts"
       - Sections align with logical workflow steps
     success_criteria:
       - Schema-valid script artifact

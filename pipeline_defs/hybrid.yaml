@@ -81,6 +81,7 @@ stages:
     review_focus:
       - Source-led beats and support-led beats are clearly separated
       - Narration or dialogue plan is realistic
+      - "Anti-AI-slop compliance: added narration and cards are free of AI clichés, binary contrasts, and em dashes"
       - The script does not rely on unsupported assets without stating it
     success_criteria:
       - Schema-valid script artifact

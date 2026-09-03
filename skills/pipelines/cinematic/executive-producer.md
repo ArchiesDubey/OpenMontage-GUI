@@ -108,6 +108,13 @@ CHECK: Beat escalation
 
 CHECK: Duration fit
   - Word count aligns with cinematic pacing (slower than explainer — ~120 WPM)
+
+CHECK: Anti-AI-slop compliance (/no-ai-slop)
+  - Scan voiceover and title cards for empty puffery ("stands as a testament", "pivotal moment")
+  - Scan for banned AI words (delve, tapestry, robust, cutting-edge, transformative, elevate, realm, beacon)
+  - Check for binary contrasts ("not X, but Y") and fake-profound kickers
+  - Check for em dashes ('—') in spoken voiceover
+  - If violations found: REVISE script per skills/meta/no-ai-slop.md
 ```
 
 ### After SCENE_PLAN stage:

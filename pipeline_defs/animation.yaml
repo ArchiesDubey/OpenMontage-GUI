@@ -139,6 +139,7 @@ stages:
       - On-screen text remains readable and restrained
       - Timing structure leaves room for visual holds
       - Narration-led scripts include concrete voice performance cues
+      - "Anti-AI-slop compliance: zero banned AI words, zero binary contrasts, zero em dashes in TTS text"
       - Word count within +/-10% of duration target from selected concept
       - Script incorporates research data points where relevant
     success_criteria:

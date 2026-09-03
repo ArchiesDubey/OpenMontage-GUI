@@ -76,10 +76,11 @@ This skill codifies the complete production system behind top-performing 2D mini
 3. **Transitions:** Quick hard cuts or simple linear horizontal wipes. Avoid flashy 3D transitions.
 
 ### Phase 6: Thumbnail Creation
-* Strictly follow the **3-Element Rule**:
-  1. Emotive white egghead character (shocked, skeptical, or smug).
-  2. One striking contextual prop/environment.
-  3. 1–3 words of high-impact canary yellow text (`#FFEE00`) with thick black outline (`"NO JOBS"`, `"FAKE SLEEP?"`, `"WHY?"`).
+* Route thumbnail design to the dedicated companion skill: [**`minimalist-thumbnail-craft`**](file:///Users/archiesdubey/Desktop/Code.nosync/OpenMontage/.agents/skills/minimalist-thumbnail-craft/SKILL.md).
+* Strictly enforce:
+  1. **Zero Title Duplication:** Never repeat the video title in thumbnail text.
+  2. **The 3-Element Rule:** (1) Emotive white egghead character, (2) One striking contextual prop/paradox, (3) 1–3 words of high-impact Canary Yellow text (`#FFEE00`) with thick black outline (`"NO JOBS"`, `"FAKE SLEEP?"`, `"WHY?"`, `"NOT IN CHARGE"`).
+  3. **Headless Render:** Use `render_thumbnail.py` to produce pixel-perfect 1280x720 thumbnails and pass the 120px mobile squint test.
 
 ---
 
