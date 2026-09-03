@@ -120,11 +120,11 @@ python scripts/backlot_simulate_run.py  # no production yet? watch a simulated o
 
 It ships with OpenMontage, no separate install. When a production starts from your AI coding assistant, the agent opens the board for you automatically.
 
-<p align="center"><img src="docs/images/backlot/board-live.png" alt="OpenMontage GUI live board (Backlot) — pipeline stages and assets generating in real time" width="920"></p>
+<p align="center"><img src="docs/images/backlot/board-live.png" alt="Backlot live board — pipeline stages and a finished run awaiting approval, updating in real time" width="920"></p>
 
 It's a cockpit, not just a viewer: pick and launch an agent (Claude Code and Gemini CLI built in, anything else via [`backlot/agents.yaml`](backlot/agents.yaml)), stop a run, and approve or redirect gates right on the card — asset generation pauses on a scene-by-scene contact sheet so you sign off *before* the render, not after:
 
-<p align="center"><img src="docs/images/backlot/storyboard.png" alt="OpenMontage GUI asset approval gate (Backlot storyboard) — filmstrip of scene takes and renders" width="920"></p>
+<p align="center"><img src="docs/images/backlot/storyboard.png" alt="Backlot storyboard — filmstrip of scene takes with model, cost, camera moves, and narration" width="920"></p>
 
 Full operating guide (agent picker, run/stop, decisions, replay): [`backlot/README.md`](backlot/README.md).
 
