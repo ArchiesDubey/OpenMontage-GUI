@@ -7,14 +7,14 @@
 
 <p align="center"><sub><em>Monty the Clapper — the official mascot of OpenMontage</em></sub></p>
 
-<h1 align="center">OpenMontage GUI</h1>
+<h1 align="center">OpenMontage</h1>
 
-<p align="center"><strong>The browser-based control panel for OpenMontage — the first open-source, agentic video production system.</strong></p>
+<p align="center"><strong>The open-source, agentic video production studio — research, script, generate, edit, and compose, all driven by your AI coding assistant.</strong></p>
 
-<p align="center"><sub>A GUI-enhanced fork of <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>, adding <a href="#launch-the-openmontage-gui">Backlot</a>: a live storyboard, one-click agent launcher, and approval cockpit on top of the same 12 pipelines, 100+ tools, and 700+ skill files. For the upstream project's own site, releases, and community, see <a href="https://openmontage.video">openmontage.video</a> and <a href="https://github.com/calesthio/OpenMontage">calesthio/OpenMontage</a>.</sub></p>
+<p align="center"><sub>Twelve production pipelines, 100+ provider tools, and 700+ skill files — with <a href="#launch-backlot">Backlot</a> built in: a live storyboard, one-click agent launcher, and approval cockpit that shows the production happening in your browser.</sub></p>
 
 <p align="center">
-  <a href="#launch-the-openmontage-gui">Launch the GUI</a> &nbsp;·&nbsp;
+  <a href="#launch-backlot">Launch Backlot</a> &nbsp;·&nbsp;
   <a href="#start-from-a-video-you-already-love">Paste A Video</a> &nbsp;·&nbsp;
   <a href="#quick-start">Quick Start</a> &nbsp;·&nbsp;
   <a href="#try-these-prompts">Try These Prompts</a> &nbsp;·&nbsp;
@@ -108,9 +108,9 @@ Works with **Claude Code, Cursor, Copilot, Windsurf, Codex** — any AI coding a
 
 ---
 
-## Launch The OpenMontage GUI
+## Launch Backlot
 
-**Backlot is the OpenMontage GUI** — a local, browser-based control panel: it shows a production happening live and lets you drive it — pick an agent, run it, approve gates, replay a finished run — with or without a terminal open.
+**Backlot is OpenMontage's cockpit** — a local, browser-based control panel: it shows a production happening live and lets you drive it — pick an agent, run it, approve gates, replay a finished run — with or without a terminal open.
 
 ```bash
 python -m backlot open                  # library — every project on disk
@@ -671,9 +671,7 @@ See `docs/ARCHITECTURE.md` for the full technical reference, `docs/PROVIDERS.md`
 
 ### Community & Contact
 
-This fork doesn't run a separate community — for general OpenMontage discussion, the upstream project is the active hub: [GitHub Discussions](https://github.com/calesthio/OpenMontage/discussions) (Show and Tell, Ideas, Q&A), [GitHub Issues](https://github.com/calesthio/OpenMontage/issues), and [@calesthioailabs on X](https://x.com/calesthioailabs) for release and build updates.
-
-For anything specific to this fork — the Backlot GUI/cockpit, or bugs in code only found here — open an issue or PR on [this repo](https://github.com/ArchiesDubey/OpenMontage-GUI).
+Open an issue or discussion on [this repo](https://github.com/ArchiesDubey/OpenMontage-GUI) — bug reports, ideas, and show-and-tell are all welcome.
 
 ---
 
@@ -689,18 +687,6 @@ make test
 
 ---
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=calesthio%2FOpenMontage&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/image?repos=calesthio/OpenMontage&type=date&legend=top-left" />
-  </picture>
-</a>
-
----
-
 ## License
 
 [GNU AGPLv3](LICENSE)
@@ -710,5 +696,3 @@ make test
 **OpenMontage** — Production-grade video with real quality enforcement, orchestrated by your AI assistant.
 
 If this project looks useful to you, a ⭐ would really mean a lot — it helps others discover it too.
-
-If you'd like to go further, [sponsor the upstream OpenMontage project](https://github.com/sponsors/calesthio) — it's built nights and weekends by its maintainer, and your support makes that sustainable.

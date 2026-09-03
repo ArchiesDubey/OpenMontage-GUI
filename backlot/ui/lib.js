@@ -115,3 +115,35 @@ export const STAGE_ICONS = {
   awaiting_human: "◈",
   failed: "✕",
 };
+
+// ---------------------------------------------------------------------------
+// theme (persisted dark/light; the toggle replaces itself — CSS variables do
+// the rest, so pages never need a re-render on switch)
+// ---------------------------------------------------------------------------
+
+export const THEME_KEY = "backlot.theme";
+
+export function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, theme === "light" ? "light" : "dark");
+}
+
+export function currentTheme() {
+  return localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
+}
+
+export function renderThemeToggle() {
+  const theme = currentTheme();
+  const next = theme === "light" ? "dark" : "light";
+  return el("button", {
+    class: "theme-toggle",
+    type: "button",
+    title: `Switch to ${next} theme`,
+    "aria-label": `Switch to ${next} theme`,
+    "aria-pressed": theme === "light" ? "true" : "false",
+    onclick: () => {
+      applyTheme(next);
+      document.querySelector(".theme-toggle")?.replaceWith(renderThemeToggle());
+    },
+  }, el("span", { class: "theme-toggle-icon", "aria-hidden": "true" }, theme === "light" ? "☾" : "☀"));
+}

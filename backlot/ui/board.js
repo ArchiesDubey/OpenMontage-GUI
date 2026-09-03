@@ -1,8 +1,8 @@
 // Backlot project board — renders BoardState and stays live via SSE.
 
 import {
-  STAGE_ICONS, el, fmtAgo, fmtClock, fmtDuration, fmtMoney,
-  getJSON, mediaURL, postJSON, subscribe, thumbURL, waveBars,
+  STAGE_ICONS, applyTheme, currentTheme, el, fmtAgo, fmtClock, fmtDuration, fmtMoney,
+  getJSON, mediaURL, postJSON, renderThemeToggle, subscribe, thumbURL, waveBars,
 } from "/ui/lib.js";
 
 const rawProjectPath = location.pathname.split("/p/")[1] || "";
@@ -12,36 +12,13 @@ const app = document.getElementById("app");
 const modal = document.getElementById("modal");
 const player = document.getElementById("player");
 
-const THEME_KEY = "backlot.theme";
-let currentTheme = localStorage.getItem(THEME_KEY) === "light" ? "light" : "dark";
 let state = null;
 let selectedStage = null;   // stage drawer open for this stage name
 let activeRender = 0;
 let replay = null;          // {t0, t1, t, playing} — replay mode when non-null
 let firstPaint = true;
 
-function applyTheme(theme) {
-  currentTheme = theme === "light" ? "light" : "dark";
-  document.documentElement.dataset.theme = currentTheme;
-  localStorage.setItem(THEME_KEY, currentTheme);
-}
-
-function renderThemeToggle() {
-  const next = currentTheme === "light" ? "dark" : "light";
-  return el("button", {
-    class: "theme-toggle",
-    type: "button",
-    title: `Switch to ${next} theme`,
-    "aria-label": `Switch to ${next} theme`,
-    "aria-pressed": currentTheme === "light" ? "true" : "false",
-    onclick: () => {
-      applyTheme(next);
-      render();
-    },
-  }, el("span", { class: "theme-toggle-icon", "aria-hidden": "true" }, currentTheme === "light" ? "☾" : "☀"));
-}
-
-applyTheme(currentTheme);
+applyTheme(currentTheme());
 
 // ---------------------------------------------------------------------------
 // header slate
