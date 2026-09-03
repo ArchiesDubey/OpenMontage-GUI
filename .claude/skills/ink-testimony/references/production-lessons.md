@@ -112,8 +112,8 @@ real target:
 **Recovery move if a cut ships too slow:** rebuild the **video track only**. Slice
 each beat's screen time into 2.5–6 s sub-shots from detail crops of the beat's own
 still plus ~15–20 new detail/second-angle frames; leave `audio_mix.m4a` and the SRT
-untouched (no re-transcribe, no desync risk). E03 did this for ~$1 and ~15 min:
-`scripts/e03_recut.py` is the template.
+untouched (no re-transcribe, no desync risk). E03 did this for ~$1 and ~15 min;
+`scripts/ink_testimony/compose.py` (video-track-only rebuild) is the standardized template.
 
 ## 5. Compose data-driven, with the timing assertion — but the generic runner is not generic
 
@@ -145,10 +145,10 @@ worked around them with a bespoke `eNN_compose.py`):
   `split[owner]`. The channel's cards each have their **own** narration clip
   ("Act one. The slow months.") and don't borrow time from a neighbour, so use a
   uniform lead/clip/gap/tail chain with **no split-card branch** (see
-  `e02_compose.py` / `e03_compose.py`).
+  `scripts/ink_testimony/compose.py`, which handles this in its timing chain).
 - The final mux **hardcodes burned subtitles**. E03 added a `burn_subtitles` flag
-  (default `True`) to the shared runner; the E03 render itself used
-  `e03_compose.py` with `BURN_SUBTITLES = False`.
+  (default `True`) to the shared runner; renders opt out via
+  `ink_config.json` → `"burn_subtitles": false`.
 
 **MP3 timing (E02, E03):** ElevenLabs MP3s carry ~35 ms of LAME encoder
 delay/padding, so `ffprobe`'s container duration reads **longer** than what decodes.

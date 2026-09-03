@@ -97,7 +97,7 @@ audio:
   ducking_threshold_db: -14
 
 asset_generation:
-  # LOCKED. This is the INK_STYLE block from scripts/e01_generate_assets.py, verbatim.
+  # LOCKED. This is the INK_STYLE block from scripts/ink_testimony/common.py, verbatim.
   # PROMPT ORDER IS LOAD-BEARING and NOT the usual prefix order:
   #   "Pen-and-ink illustration with soft gray brush washes on warm white paper: <SCENE>. "
   #   + <optional reinforcement clauses> + <this block>

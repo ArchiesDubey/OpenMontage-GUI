@@ -4,6 +4,71 @@ Start here. This is the complete operating guide and agent contract for OpenMont
 
 For architecture, key files, and conventions see [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
 
+## Token-Efficiency Contract (Progressive Disclosure — Binding)
+
+Guidance in this repo is an asset, not overhead — but *how* it is read is governed:
+
+1. **Read the least guidance that covers the decision at hand.** Read a director
+   skill when you are doing that stage's work — not all of them up front. Read a
+   Layer 3 skill when you are about to call that tool — not before.
+2. **Never skip guidance that covers a decision you are making.** Progressive
+   disclosure means deferring reads, not dropping them. If you are writing a
+   script, the script director + anti-slop pass are mandatory regardless of mode.
+3. **Never re-ask a decided question.** Before presenting a provider menu, a
+   music plan, a runtime choice, or an approval gate, check the project profile
+   (below). Re-asking what `profile.json` already locks is a token defect.
+4. **Never write per-episode/per-project tooling.** Assets and composition run
+   through standardized, artifact-driven runner modules (e.g.
+   `scripts.ink_testimony` — `python -m scripts.ink_testimony.assets --project P
+   --mode sample|batch|regen`). If a channel lacks a runner, generalize the
+   closest existing one via its config — do not scaffold `eNN_*.py` scripts.
+   One-off failure recovery uses the runner's regen mode, not a new script.
+5. **Capture decisions so the next run is cheaper.** At the end of a run, offer
+   to lock the run's choices into the project profile (`python -m lib.profile`).
+
+## Operator Mode — Locked Profiles (Fast Path)
+
+A project profile at `projects/<project_id>/profile.json` records locked
+decisions and an approval policy. When `locked: true`:
+
+**Skip entirely** (the decision is already made and logged):
+
+- Onboarding/capability menus and preflight provider presentations
+- The "Ask Before Generation Starts" provider gate for every subject present in
+  `profile.decisions` — announce the locked choice in one line and proceed
+- The "Present Both Composition Runtimes" gate when
+  `decisions["Render runtime"]` is locked (still record it in
+  `render_runtime_selection` as the only considered option, with reason
+  "locked by project profile")
+- The Music Plan re-presentation when `decisions["Music source"]` is locked
+- Human approval presentations for stages in `gate_policy.auto_approve_stages`
+  — `lib/checkpoint.py` accepts the locked profile as approval evidence and
+  stamps `metadata.approval_source` (pre-authorization is logged as an
+  `approval_policy` decision when the profile is saved)
+
+**Still mandatory** (a locked profile removes repetition, not rigor):
+
+- Reading the stage director skill + relevant Layer 3 skills for the stage you
+  are executing (progressive disclosure — see the contract above)
+- The anti-AI-slop script pass, reviewer pass, and artifact schemas
+- Escalating blockers explicitly and waiting for user approval
+- Asking before ANY decision not present in `profile.decisions` — an unmapped
+  subject falls back to the full gate. Do not guess an answer to avoid asking.
+- Surfacing the one-line announce before paid calls (tool, provider, model, cost)
+
+**Profile commands** (`python -m lib.profile --help` for details):
+
+```bash
+python -m lib.profile init <project_id> --auto-approve all --runner scripts.ink_testimony \
+    --decision "Narration TTS provider=elevenlabs"
+python -m lib.profile show <project_id>     # read before running any stage
+python -m lib.profile set <project_id> "Render runtime" ffmpeg   # lock/update one choice
+python -m lib.profile unlock <project_id>   # back to the full gated flow
+```
+
+If a profile is absent or unlocked, run the full flow below — do not invent one
+without the user's go-ahead.
+
 ## First Interaction — Onboarding
 
 When the user's first message is vague, exploratory, or asks what you can do ("make me a video", "what can you do?", "help me create something", "I want to make content"), read the onboarding skill **before** doing anything else:
@@ -110,6 +175,7 @@ For **every pipeline and every style**, before the FIRST generation call of each
 3. Wait for explicit user confirmation before generating. **Sample/preview calls are generation calls** — the gate applies to them too.
 4. Record the confirmed choice in `decision_log` (e.g. `category: "provider_selection"`, subject naming the kind: "Image generation provider" / "TTS provider" / "Music provider").
 5. Locked-style channels (e.g. ink-testimony's FLUX + ElevenLabs voice) count as confirmed **only while the locked provider is used unchanged**; any swap re-gates with the user.
+6. **Locked-profile exception:** a subject already present in the project's locked `profile.json` (`decisions`) is confirmed — announce it in one line and proceed. Any provider/model change must go through `python -m lib.profile set` (which re-logs the decision); a silent swap is still forbidden.
 
 This gate is separate from sample approval: the sample confirms output *quality*; this gate confirms the *provider*. Both must pass before batching.
 
@@ -145,6 +211,8 @@ The presentation MUST include, for each runtime:
 Then wait for explicit user approval before advancing. Record the full shortlist — BOTH runtimes plus any "ffmpeg" option that applies — as `options_considered` in the `render_runtime_selection` decision logged in `decision_log`. A decision log entry with only one runtime considered when both were available is a CRITICAL reviewer finding.
 
 Exception: if only one runtime is available on the machine, the agent proceeds with it but MUST say so explicitly ("HyperFrames isn't installed on this machine; I'm proceeding with Remotion. Install HyperFrames if you want the alternative."). The `render_runtime_selection` decision still records the unavailable option as `rejected_because: "runtime not available on this machine"`.
+
+**Locked-profile exception:** when the project's locked `profile.json` pins `Render runtime`, present the locked choice in one line and proceed — do not re-run the shortlist conversation.
 
 This rule applies to every pipeline that invokes `video_compose` — not just Wave 1. A pipeline's director skill may recommend a runtime, but that recommendation is input to the conversation with the user, not a decision.
 
@@ -273,6 +341,8 @@ If the folder has tracks, the proposal and asset stages should present them as o
 > **Beta pipelines** have not been fully audited. They work, but expect rough edges. Mention this when the user selects one.
 
 ## Mandatory Preflight
+
+**Profile check first:** if `projects/<project_id>/profile.json` exists with `locked: true`, run `python -m lib.profile show <project_id>` instead of the capability menu below — Operator Mode replaces preflight presentations. The full preflight is for new or unlocked projects.
 
 Do this before any creative work. **Use `provider_menu_summary()` first — it's the human-ready rollup.** The raw `support_envelope()` dump is a firehose (megabytes of JSON on a well-configured machine); pasting it into chat will bury the user.
 
@@ -615,6 +685,7 @@ The reviewer is a meta skill (`skills/meta/reviewer.md`) — advisory, never dir
 The checkpoint protocol meta skill (`skills/meta/checkpoint-protocol.md`) teaches the agent when to pause:
 
 - Read `human_approval_default` from the pipeline manifest per stage. **The manifest value is binding** — never re-judge it. `lib/checkpoint.py` enforces this: a gated stage cannot be written `completed` without `human_approved=True`.
+- **Locked-profile pre-authorization:** when the project's locked `profile.json` lists the stage in `gate_policy.auto_approve_stages`, `lib/checkpoint.py` accepts the profile as approval evidence (stamping `metadata.approval_source`) and the agent may proceed without a presentation. The pre-authorization is logged as an `approval_policy` decision when the profile is saved; `lib.profile unlock` restores the full gate.
 - Typical gated stages: `idea`/`proposal`, `script`, `scene_plan`, **`assets`** (review the generated assets scene-by-scene — the Backlot board's filmstrip — before compose locks them in), and `publish` where the pipeline has one. Most pipelines auto-proceed on `edit` and `compose`, but not all (documentary-montage gates `edit`) — the manifest you loaded is the only authority.
 - When approval is required: write the checkpoint as `awaiting_human`, present artifact summary, review findings, and cost snapshot — then **END YOUR TURN**. Doing further pipeline work in the same response is a gate violation.
 - **Approval is per-gate.** An early "go ahead" never covers later gates; explicit full-run pre-authorization must be recorded as a `decision_log` entry (`category: "approval_policy"`) to count.

@@ -1,8 +1,8 @@
 # Ink & Testimony — Style Lock
 
 Do not re-derive. Reuse the validated blocks below verbatim. Source of record:
-`scripts/e01_generate_assets.py` (blocks), `scripts/e02_regen_failures.py`
-(reinforcement clauses), `styles/ink-testimony.yaml` (schema-valid copy).
+`scripts/ink_testimony/common.py` (locked blocks and reinforcement clauses),
+`styles/ink-testimony.yaml` (schema-valid copy).
 
 ## INK_STYLE (light register — the default)
 

@@ -479,19 +479,36 @@ def write_checkpoint(
     if gated:
         human_approval_required = True
         if status == "completed" and not human_approved:
-            gate_source = (
-                f"human_approval_default: true in the {pipeline_type!r} manifest"
-                if manifest_gate
-                else "human_approval_required=True was passed by the caller"
-            )
-            raise CheckpointValidationError(
-                f"GATE VIOLATION: stage {stage!r} requires human approval "
-                f"({gate_source}) but status='completed' was written without "
-                f"human_approved=True. Correct protocol: write "
-                f"status='awaiting_human', present the artifact summary to the "
-                f"user, END YOUR TURN, and only after the user approves "
-                f"re-write with status='completed', human_approved=True."
-            )
+            # Locked-profile pre-authorization: a locked project profile may
+            # pre-approve this stage (recorded as an approval_policy decision
+            # in decision_log.json). Fail-closed — any profile absence,
+            # corruption, or non-membership keeps the gate ON.
+            approval_source = None
+            try:
+                from lib.profile import stage_auto_approved
+                if stage_auto_approved(pipeline_dir, project_id, stage):
+                    human_approved = True
+                    approval_source = "locked profile gate_policy.auto_approve_stages"
+            except Exception:
+                approval_source = None
+            if status == "completed" and not human_approved:
+                gate_source = (
+                    f"human_approval_default: true in the {pipeline_type!r} manifest"
+                    if manifest_gate
+                    else "human_approval_required=True was passed by the caller"
+                )
+                raise CheckpointValidationError(
+                    f"GATE VIOLATION: stage {stage!r} requires human approval "
+                    f"({gate_source}) but status='completed' was written without "
+                    f"human_approved=True. Correct protocol: write "
+                    f"status='awaiting_human', present the artifact summary to the "
+                    f"user, END YOUR TURN, and only after the user approves "
+                    f"re-write with status='completed', human_approved=True."
+                )
+            if approval_source and metadata is None:
+                metadata = {}
+            if approval_source:
+                metadata["approval_source"] = approval_source  # type: ignore[index]
 
     _enforce_stage_prerequisites(
         pipeline_dir,
