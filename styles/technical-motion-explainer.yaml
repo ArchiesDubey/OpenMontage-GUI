@@ -1,0 +1,104 @@
+identity:
+  name: "Technical Motion Explainer"
+  category: motion-graphics
+  mood: authoritative, technical, cyber-minimalist, surgical
+  pace: fast
+  best_for: "Hardware benchmarks, AI architectures, distributed systems, developer tools, technical video essays"
+
+visual_language:
+  color_palette:
+    primary: ["#FFD600", "#38BDF8"]
+    accent: ["#22C55E", "#EF4444"]
+    background: "#0A0A0A"
+    text: "#FFFFFF"
+    muted: "#888888"
+  composition: centered with technical geometric grid, high contrast, generous dark space
+  texture: pure vector, dark glassmorphic cards, subtle glowing outlines, zero raster noise
+
+typography:
+  headings:
+    font: "Inter"
+    weight: 800
+    tracking: "-0.02em"
+  body:
+    font: "Inter"
+    weight: 400
+    line_height: 1.6
+  code:
+    font: "JetBrains Mono"
+    weight: 400
+  stat_card:
+    font: "Inter"
+    weight: 900
+    size_multiplier: 3.5
+  scale_system: "perfect_fourth"
+  weight_matrix:
+    title: 900
+    heading: 800
+    body: 400
+    caption: 300
+
+motion:
+  transitions: [cut, glitch, wipe-left, spring-up]
+  animation_style: "spring(1, 140, 18), crisp, snappy, no rubber-banding"
+  pacing_rules:
+    min_scene_hold_seconds: 2.0
+    max_scene_hold_seconds: 7.0
+    text_card_hold_seconds: 2.5
+    stat_card_hold_seconds: 2.5
+    transition_duration_seconds: 0.3
+  entrance: "spring-up or progressive node reveal"
+  exit: "hard-cut or quick fade"
+
+audio:
+  voice_style: "authoritative, calm, technical, articulate, conversational skepticism"
+  music_mood: "low-tempo driving electronic synth, dark ambient drone, pulsing bassline"
+  music_volume: 0.08
+  sfx_style: "mechanical counter clicks, subtle card pops, muted sub impacts, digital glitch on error"
+  ducking_threshold_db: -4
+
+asset_generation:
+  image_prompt_prefix: "vector motion graphics, dark minimalist technical UI, pitch black background, "
+  image_negative_prompt: "photorealistic, 3d render, messy, hand-drawn, cluttered, colorful anime"
+  diagram_style: "neon outlines on dark background, glowing router diamonds, capacity threshold bars"
+  consistency_anchors:
+    - "Pitch black (#0A0A0A) background throughout"
+    - "Canary yellow (#FFD600) and Sky Blue (#38BDF8) as primary data accents"
+    - "Monospace uppercase eyebrows and watermark"
+    - "Zero raster AI image generation — pure vector and CSS"
+
+overlays:
+  stat_card:
+    bg: "#121214"
+    border: "#FFD600"
+    radius: 8
+    shadow: "0 0 16px rgba(255,214,0,0.2)"
+  key_term:
+    bg: "#18181C"
+    text: "#38BDF8"
+    radius: 6
+  code_block:
+    bg: "#0D0D10"
+    text: "#CCCCCC"
+    highlight: "#EF4444"
+
+quality_rules:
+  - "Minimum contrast ratio 5:1 for all text"
+  - "No generative AI images or video clips (100% vector SVG and CSS cards)"
+  - "Average sentence length between 11 and 14 words"
+  - "Spoken speed between 135 and 175 WPM"
+  - "New visual state or animation trigger every 2.5 to 3.5 seconds"
+  - "Tactile sound effect on every stat count-up and transition"
+
+chart_palette:
+  - "#FFD600"
+  - "#38BDF8"
+  - "#22C55E"
+  - "#EF4444"
+  - "#A855F7"
+  - "#F97316"
+
+color_rules:
+  harmony_type: "complementary"
+  contrast_validation: true
+  colorblind_safe: true
